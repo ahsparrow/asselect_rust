@@ -1,7 +1,10 @@
 use gloo_net::http::Request;
 use serde_json::Value as JsonValue;
 use wasm_bindgen_futures::spawn_local;
-use yew::{function_component, html, use_effect_with_deps, use_state, Html, UseStateHandle};
+use yew::{function_component, html, use_effect_with_deps, use_state, UseStateHandle};
+
+mod asselect;
+mod components;
 
 #[function_component(App)]
 fn app() -> Html {
@@ -30,24 +33,23 @@ fn app() -> Html {
     }
 
     let html_logic = match yaixm.as_ref() {
-        Some(yaixm) => {
-            let airspace = yaixm["airspace"].as_array().unwrap();
+        Some(yaixm) => asselect::asselect(yaixm),
 
-            html! {
-                airspace.iter().map(|x| html!(<p>{x["name"].as_str().unwrap()}</p>)).collect::<Html>()
-            }
-        }
         None => {
             html! {
-              <p>{"Error getting YAIXM"}</p>
+                <div class="section">
+                  <div class="container">
+                    <div class="notification is-info">
+                      <h2 class="title is-4">{"Waiting for airspace data..."}</h2>
+                    </div>
+                  </div>
+                </div>
             }
         }
     };
 
     html! {
-      <>
         {html_logic}
-      </>
     }
 }
 
