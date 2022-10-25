@@ -5,6 +5,7 @@ use yew::{function_component, html, use_effect_with_deps, use_state, UseStateHan
 
 mod asselect;
 mod components;
+mod yaixm;
 
 #[function_component(App)]
 fn app() -> Html {

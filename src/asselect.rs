@@ -1,18 +1,23 @@
 use crate::components::test;
+use crate::yaixm;
 use serde_json::Value as JsonValue;
-use yew::{html, Html};
+use yew::{html, Callback, Html};
+
+pub struct LoaSetting {
+    pub name: String,
+    pub value: bool
+}
 
 pub fn asselect(yaixm: &JsonValue) -> Html {
-    let loa = yaixm["loa"].as_array().unwrap();
-    let loa_names = loa
-        .iter()
-        .map(|x| x["name"].as_str().unwrap().to_string())
-        .collect::<Vec<String>>();
+
+    let loa_names = yaixm::loa_names(yaixm);
+
+    let loa_callback = Callback::from(move |loa: LoaSetting| log::info!("{} {}", loa.name, loa.value));
 
     html! {
         <div class="section">
           <div class="container">
-            <test::Test yaixm={loa_names} />
+            <test::Test loa={loa_names} callback={loa_callback}/>
           </div>
        </div>
     }
