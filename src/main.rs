@@ -1,44 +1,98 @@
 use gloo_storage::{LocalStorage, Storage};
+use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashSet;
-use yew::{html, Callback, Component, Context, ContextProvider, Html};
+use yew::{html, Component, Context, Html};
 
-//mod asselect;
 mod components;
 mod yaixm;
 
-// For settings callback
-#[derive(Debug)]
-pub enum SettingCategory {
-    Airspace,
-    Loa,
-    Rat,
-    Wave
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct Airspace {
+    atz: String,
+    gliding: String,
+    hirta_gvs: String,
+    ils: String,
+    microlight: String,
+    unlicensed: String,
+    home: bool,
+    obstacle: bool,
 }
 
-pub struct Setting {
-    pub category: SettingCategory,
+impl Airspace {
+    fn new() -> Self {
+        Airspace {
+            atz: "ctr".to_string(),
+            gliding: "exclude".to_string(),
+            hirta_gvs: "exclude".to_string(),
+            ils: "atz".to_string(),
+            microlight: "exclude".to_string(),
+            unlicensed: "exclude".to_string(),
+            home: false,
+            obstacle: false,
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct Options {
+    max_flight_level: u16,
+    radio: bool,
+    north: f64,
+    south: f64,
+    format: String,
+}
+
+impl Options {
+    fn new() -> Self {
+        Options {
+            max_flight_level: 660,
+            radio: false,
+            north: 59.0,
+            south: 49.0,
+            format: "openair".to_string(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct Settings {
+    airspace: Airspace,
+    options: Options,
+    loa: HashSet<String>,
+    rat: HashSet<String>,
+    wave: HashSet<String>,
+}
+
+impl Settings {
+    fn new() -> Self {
+        Settings {
+            airspace: Airspace::new(),
+            options: Options::new(),
+            loa: HashSet::new(),
+            rat: HashSet:: new(),
+            wave: HashSet:: new(),
+        }
+    }
+}
+
+pub struct LoaSetting {
     pub id: String,
-    pub value: Option<String>,
-    pub checked: Option<bool>
+    pub checked: bool
 }
 
-// Application context
-#[derive(Clone, PartialEq)]
-pub struct AppContext {
-    pub callback: Callback<Setting>
-}
-
+// App messages
 enum Msg {
     Save,
-    Set(Setting),
+    LoaSet(LoaSetting),
     YaixmError,
-    YaixmData(JsonValue)
+    YaixmData(JsonValue),
 }
 
+// App component
 struct App {
     yaixm: Option<JsonValue>,
-    loa: HashSet<String>,
+    settings: Settings,
 }
 
 impl Component for App {
@@ -53,11 +107,9 @@ impl Component for App {
             }
         });
 
-        let loa: HashSet<String> = LocalStorage::get("loa").unwrap_or(HashSet::new());
-
         Self {
             yaixm: None,
-            loa: loa,
+            settings: LocalStorage::get("settings").unwrap_or(Settings::new())
         }
     }
 
@@ -71,49 +123,38 @@ impl Component for App {
                 log::error!("Can't fetch YAIXM data");
                 false
             }
-            Msg::Set(setting) => {
-                log::info!("{:?} {} '{}' {}",
-                           setting.category,
-                           setting.id,
-                           setting.value.unwrap_or("".to_string()),
-                           setting.checked.unwrap_or(false)
-                           );
-                /*
-                if setting.value {
-                    self.loa.replace(setting.name);
+            Msg::LoaSet(setting) => {
+                log::info!("{} {}", setting.id, setting.checked);
+                if setting.checked {
+                    self.settings.loa.replace(setting.id);
                 } else {
-                    self.loa.remove(&setting.name);
+                    self.settings.loa.remove(&setting.id);
                 }
-                */
                 false
             }
             Msg::Save =>
             {
                 log::info!("Save");
-                LocalStorage::set("loa", self.loa.clone()).unwrap();
+                LocalStorage::set("settings", self.settings.clone()).unwrap();
                 false
             }
         }
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let context = AppContext {
-            callback: ctx.link().callback(Msg::Set)
-        };
-
         match self.yaixm.as_ref() {
             Some(yaixm) => {
+                //let loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
+                let loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
                 let save_callback = ctx.link().callback(|_| Msg::Save);
+
+                let selected = self.settings.loa.clone();
+                let loa_names = yaixm::loa_names(yaixm);
                 html! {
-                    <ContextProvider<AppContext> context={context.clone()}>
                     <div class="container">
-                      <components::test::Test
-                            loa={yaixm::loa_names(yaixm)}
-                            selected={self.loa.clone()}
-                      />
+                      <components::test::Test callback={loa_callback} loa={loa_names} selected={selected}/>
                       <button class="button is-primary" onclick={save_callback}>{"Save"}</button>
                     </div>
-                    </ContextProvider<AppContext>>
                 }
             }
 

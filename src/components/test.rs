@@ -1,4 +1,4 @@
-use crate::{Setting, SettingCategory, AppContext};
+use crate::LoaSetting;
 use std::collections::HashSet;
 use web_sys::HtmlInputElement;
 use yew::{html, Callback, Component, Context, Event, Html, Properties, TargetCast};
@@ -7,6 +7,7 @@ use yew::{html, Callback, Component, Context, Event, Html, Properties, TargetCas
 pub struct Props {
     pub loa: Vec<String>,
     pub selected: HashSet<String>,
+    pub callback: Callback<LoaSetting>,
 }
 
 pub struct Test;
@@ -20,16 +21,12 @@ impl Component for Test {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let (c, _) = ctx.link().context::<AppContext>(Callback::noop()).unwrap();
-
-        let onchange = c.callback.reform(move |e: Event| {
+        let onchange = ctx.props().callback.reform(move |e: Event| {
             let id = e.target_unchecked_into::<HtmlInputElement>().id();
             let value = e.target_unchecked_into::<HtmlInputElement>().checked();
-            Setting {
-                category: SettingCategory::Loa,
+            LoaSetting {
                 id: id,
-                checked: Some(value),
-                value: None
+                checked: value,
             }
         });
 
