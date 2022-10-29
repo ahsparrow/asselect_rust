@@ -12,26 +12,26 @@ mod yaixm;
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Airspace {
     atz: String,
-    gliding: String,
-    hirta_gvs: String,
     ils: String,
-    microlight: String,
     unlicensed: String,
-    home: bool,
-    obstacle: bool,
+    microlight: String,
+    gliding: String,
+    home: String,
+    hirta_gvs: String,
+    obstacle: String,
 }
 
 impl Airspace {
     fn new() -> Self {
         Airspace {
             atz: "ctr".to_string(),
-            gliding: "exclude".to_string(),
-            hirta_gvs: "exclude".to_string(),
             ils: "atz".to_string(),
-            microlight: "exclude".to_string(),
             unlicensed: "exclude".to_string(),
-            home: false,
-            obstacle: false,
+            microlight: "exclude".to_string(),
+            gliding: "exclude".to_string(),
+            home: "None".to_string(),
+            hirta_gvs: "exclude".to_string(),
+            obstacle: "exclude".to_string()
         }
     }
 }
@@ -78,6 +78,11 @@ impl Settings {
     }
 }
 
+pub struct AirspaceSetting {
+    pub id: String,
+    pub value: String,
+}
+
 pub struct LoaSetting {
     pub id: String,
     pub checked: bool
@@ -86,6 +91,7 @@ pub struct LoaSetting {
 // App messages
 enum Msg {
     Save,
+    AirspaceSet(AirspaceSetting),
     LoaSet(LoaSetting),
     YaixmError,
     YaixmData(JsonValue),
@@ -125,6 +131,21 @@ impl Component for App {
                 log::error!("Can't fetch YAIXM data");
                 false
             }
+            Msg::AirspaceSet(setting) => {
+                log::info!("{} {}", setting.id, setting.value);
+                match setting.id.as_str() {
+                    "atz" => self.settings.airspace.atz = setting.value,
+                    "ils" => self.settings.airspace.ils = setting.value,
+                    "unlicensed" => self.settings.airspace.unlicensed = setting.value,
+                    "microlight" => self.settings.airspace.microlight = setting.value,
+                    "gliding" => self.settings.airspace.gliding = setting.value,
+                    "home" => self.settings.airspace.home = setting.value,
+                    "hirta_gvs" => self.settings.airspace.hirta_gvs = setting.value,
+                    "obstacle" => self.settings.airspace.obstacle = setting.value,
+                    _ => (),
+                }
+                true
+            }
             Msg::LoaSet(setting) => {
                 log::info!("{} {}", setting.id, setting.checked);
                 if setting.checked {
@@ -146,8 +167,14 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         match self.yaixm.as_ref() {
             Some(yaixm) => {
+                let airspace_callback = ctx.link().callback(|s| Msg::AirspaceSet(s));
                 let loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
                 let save_callback = ctx.link().callback(|_| Msg::Save);
+
+                let airspace_settings = self.settings.airspace.clone();
+
+                let mut gliding_sites = yaixm::gliding_sites(yaixm);
+                gliding_sites.sort();
 
                 let loa_selected = self.settings.loa.clone();
                 let loa_names = yaixm::loa_names(yaixm);
@@ -160,17 +187,10 @@ impl Component for App {
                 ];
 
                 html! {
-                    /*
-                    <div class="container">
-                      <components::test::Test callback={loa_callback} loa={loa_names} selected={selected}/>
-                      <button class="button is-primary" onclick={save_callback}>{"Save"}</button>
-                    </div>
-                    */
-
                     <div class="container">
                       <Tabs {tab_names}>
                         <AirspaceTab>
-                          <AirspacePanel />
+                          <AirspacePanel settings={airspace_settings} {gliding_sites} callback={airspace_callback} />
                           <OptionsPanel />
                         </AirspaceTab>
                         <ExtraTab>
@@ -181,7 +201,9 @@ impl Component for App {
                         <NotamTab />
                         <HelpTab />
                       </Tabs>
-                      <button class="button is-primary" onclick={save_callback}>{"Save"}</button>
+                      <div class="mt-4">
+                        <button class="button is-primary" onclick={save_callback}>{"Save"}</button>
+                      </div>
                     </div>
                 }
             }

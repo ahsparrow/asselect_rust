@@ -9,7 +9,6 @@ pub struct Props {
 pub fn extra_tab(props: &Props) -> Html {
     html! {
         <div>
-          {"Hello extra tab"}
           { for props.children.iter() }
         </div>
     }

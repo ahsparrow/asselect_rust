@@ -6,10 +6,10 @@ pub struct Props {
 }
 
 #[function_component(AirspaceTab)]
-pub fn airspace_tab(_props: &Props) -> Html {
+pub fn airspace_tab(props: &Props) -> Html {
     html! {
         <div>
-          {"Hello airspace tab"}
+          { for props.children.iter() }
         </div>
     }
 }

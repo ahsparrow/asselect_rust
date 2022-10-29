@@ -17,3 +17,12 @@ pub fn loa_names(yaixm: &JsonValue) -> Vec<String> {
         .map(|x| x["name"].as_str().unwrap().to_string())
         .collect::<Vec<String>>()
 }
+
+pub fn gliding_sites(yaixm: &JsonValue) -> Vec<String> {
+    let airspace = yaixm["airspace"].as_array().unwrap();
+    airspace.iter()
+        .filter(|x| x["type"].as_str().unwrap() == "OTHER" &&
+                x["localtype"].as_str().unwrap_or("") == "GLIDER")
+        .map(|x| x["name"].as_str().unwrap().to_string())
+        .collect::<Vec<String>>()
+}
