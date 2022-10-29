@@ -48,7 +48,7 @@ pub struct Options {
 impl Options {
     fn new() -> Self {
         Options {
-            max_flight_level: 660,
+            max_flight_level: 600,
             radio: false,
             north: 59.0,
             south: 49.0,
@@ -132,7 +132,7 @@ impl Component for App {
                 } else {
                     self.settings.loa.remove(&setting.id);
                 }
-                false
+                true
             }
             Msg::Save =>
             {
@@ -146,11 +146,11 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         match self.yaixm.as_ref() {
             Some(yaixm) => {
-                let _loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
+                let loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
                 let save_callback = ctx.link().callback(|_| Msg::Save);
 
-                let _selected = self.settings.loa.clone();
-                let _loa_names = yaixm::loa_names(yaixm);
+                let loa_selected = self.settings.loa.clone();
+                let loa_names = yaixm::loa_names(yaixm);
 
                 let tab_names = vec![
                     "Airspace".to_string(),
@@ -175,7 +175,7 @@ impl Component for App {
                         </AirspaceTab>
                         <ExtraTab>
                           <RatPanel />
-                          <LoaPanel />
+                          <LoaPanel names={loa_names} selected={loa_selected} callback={loa_callback}/>
                           <WavePanel />
                         </ExtraTab>
                         <NotamTab />
