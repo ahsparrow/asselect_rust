@@ -1,3 +1,5 @@
+use components::{Tabs, AirspaceTab, ExtraTab, NotamTab, HelpTab, AirspacePanel,
+                 OptionsPanel, RatPanel, LoaPanel, WavePanel};
 use gloo_storage::{LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -144,15 +146,41 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         match self.yaixm.as_ref() {
             Some(yaixm) => {
-                //let loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
-                let loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
+                let _loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
                 let save_callback = ctx.link().callback(|_| Msg::Save);
 
-                let selected = self.settings.loa.clone();
-                let loa_names = yaixm::loa_names(yaixm);
+                let _selected = self.settings.loa.clone();
+                let _loa_names = yaixm::loa_names(yaixm);
+
+                let tab_names = vec![
+                    "Airspace".to_string(),
+                    "Extra".to_string(),
+                    "NOTAM".to_string(),
+                    "Help".to_string()
+                ];
+
                 html! {
+                    /*
                     <div class="container">
                       <components::test::Test callback={loa_callback} loa={loa_names} selected={selected}/>
+                      <button class="button is-primary" onclick={save_callback}>{"Save"}</button>
+                    </div>
+                    */
+
+                    <div class="container">
+                      <Tabs {tab_names}>
+                        <AirspaceTab>
+                          <AirspacePanel />
+                          <OptionsPanel />
+                        </AirspaceTab>
+                        <ExtraTab>
+                          <RatPanel />
+                          <LoaPanel />
+                          <WavePanel />
+                        </ExtraTab>
+                        <NotamTab />
+                        <HelpTab />
+                      </Tabs>
                       <button class="button is-primary" onclick={save_callback}>{"Save"}</button>
                     </div>
                 }
