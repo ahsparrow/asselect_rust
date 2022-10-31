@@ -1,5 +1,5 @@
-use components::{Tabs, AirspaceTab, ExtraTab, NotamTab, HelpTab, AirspacePanel,
-                 OptionsPanel, RatPanel, LoaPanel, WavePanel};
+use components::{Tabs, AirspaceTab, OptionsTab, ExtraTab, NotamTab,
+                 RatPanel, LoaPanel, WavePanel};
 use gloo_storage::{LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -180,26 +180,23 @@ impl Component for App {
                 let loa_names = yaixm::loa_names(yaixm);
 
                 let tab_names = vec![
-                    "Airspace".to_string(),
+                    "Main".to_string(),
+                    "Options".to_string(),
                     "Extra".to_string(),
                     "NOTAM".to_string(),
-                    "Help".to_string()
                 ];
 
                 html! {
                     <div class="container">
                       <Tabs {tab_names}>
-                        <AirspaceTab>
-                          <AirspacePanel settings={airspace_settings} {gliding_sites} callback={airspace_callback} />
-                          <OptionsPanel />
-                        </AirspaceTab>
+                        <AirspaceTab settings={airspace_settings} {gliding_sites} callback={airspace_callback} />
+                        <OptionsTab />
                         <ExtraTab>
                           <RatPanel />
                           <LoaPanel names={loa_names} selected={loa_selected} callback={loa_callback}/>
                           <WavePanel />
                         </ExtraTab>
                         <NotamTab />
-                        <HelpTab />
                       </Tabs>
                       <div class="mt-4">
                         <button class="button is-primary" onclick={save_callback}>{"Save"}</button>
