@@ -187,6 +187,14 @@ impl Component for App {
                 ];
 
                 html! {
+                    <>
+                    <div class="hero is-small is-primary">
+                      <div class="hero-body py-2">
+                        <p class="subtitle is-4">
+                          {"ASSelect - UK Airspace"}
+                        </p>
+                      </div>
+                    </div>
                     <div class="container">
                       <Tabs {tab_names}>
                         <AirspaceTab settings={airspace_settings} {gliding_sites} callback={airspace_callback} />
@@ -198,10 +206,15 @@ impl Component for App {
                         </ExtraTab>
                         <NotamTab />
                       </Tabs>
-                      <div class="mt-4">
-                        <button class="button is-primary" onclick={save_callback}>{"Save"}</button>
+                    </div>
+                    <div class="container">
+                      <div class="ml-4 mt-4">
+                        <button class="button is-primary" onclick={save_callback}>
+                          {"Save"}
+                        </button>
                       </div>
                     </div>
+                    </>
                 }
             }
 

@@ -48,7 +48,9 @@ pub fn tabs(props: &Props) -> Html {
             { tabs() }
           </ul>
         </div>
-        { panel() }
+        <div class="mx-4">
+          { panel() }
+        </div>
         </>
     }
 }
