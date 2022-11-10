@@ -24,8 +24,8 @@ pub struct Airspace {
     obstacle: String,
 }
 
-impl Airspace {
-    fn new() -> Self {
+impl Default for Airspace {
+    fn default() -> Self {
         Airspace {
             atz: "ctr".to_string(),
             ils: "atz".to_string(),
@@ -48,8 +48,8 @@ pub struct Options {
     format: String,
 }
 
-impl Options {
-    fn new() -> Self {
+impl Default for Options {
+    fn default() -> Self {
         Options {
             max_flight_level: 600,
             radio: false,
@@ -60,25 +60,13 @@ impl Options {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
 pub struct Settings {
     airspace: Airspace,
     options: Options,
     loa: HashSet<String>,
     rat: HashSet<String>,
     wave: HashSet<String>,
-}
-
-impl Settings {
-    fn new() -> Self {
-        Settings {
-            airspace: Airspace::new(),
-            options: Options::new(),
-            loa: HashSet::new(),
-            rat: HashSet:: new(),
-            wave: HashSet:: new(),
-        }
-    }
 }
 
 pub struct AirspaceSetting {
@@ -120,7 +108,7 @@ impl Component for App {
 
         Self {
             yaixm: None,
-            settings: LocalStorage::get("settings").unwrap_or_else(|_| Settings::new())
+            settings: LocalStorage::get("settings").unwrap_or_default(),
         }
     }
 
