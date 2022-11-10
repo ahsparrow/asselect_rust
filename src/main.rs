@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashSet;
 use yew::{html, Component, Context, Html};
+use yaixm::util::{fetch_yaixm, gliding_sites, loa_names};
 
 mod components;
 mod yaixm;
@@ -109,7 +110,7 @@ impl Component for App {
 
     fn create(ctx: &Context<Self>) -> Self {
         ctx.link().send_future(async {
-            match yaixm::fetch_yaixm().await {
+            match fetch_yaixm().await {
                 Ok(json) => Msg::YaixmData(json),
                 Err(_err) => Msg::YaixmError,
             }
@@ -173,11 +174,11 @@ impl Component for App {
 
                 let airspace_settings = self.settings.airspace.clone();
 
-                let mut gliding_sites = yaixm::gliding_sites(yaixm);
+                let mut gliding_sites = gliding_sites(yaixm);
                 gliding_sites.sort();
 
                 let loa_selected = self.settings.loa.clone();
-                let loa_names = yaixm::loa_names(yaixm);
+                let loa_names = loa_names(yaixm);
 
                 let tab_names = vec![
                     "Main".to_string(),
