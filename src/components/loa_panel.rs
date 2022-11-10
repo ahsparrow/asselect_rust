@@ -14,11 +14,11 @@ pub struct Props {
 pub fn loa_panel(props: &Props) -> Html {
     let onchange = props.callback.reform(|e: Event| {
         let id = e.target_unchecked_into::<HtmlInputElement>().id();
-        let value = e.target_unchecked_into::<HtmlInputElement>().checked();
+        let checked = e.target_unchecked_into::<HtmlInputElement>().checked();
 
         LoaSetting {
-            id: id,
-            checked: value,
+            id,
+            checked,
         }
     });
 

@@ -1,3 +1,5 @@
+#![allow(clippy::let_unit_value)] // For problem in html! macro
+
 use components::{Tabs, AirspaceTab, OptionsTab, ExtraTab, NotamTab,
                  RatPanel, LoaPanel, WavePanel};
 use gloo_storage::{LocalStorage, Storage};
@@ -10,7 +12,7 @@ use yaixm::util::{fetch_yaixm, gliding_sites, loa_names};
 mod components;
 mod yaixm;
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Airspace {
     atz: String,
     ils: String,
@@ -118,7 +120,7 @@ impl Component for App {
 
         Self {
             yaixm: None,
-            settings: LocalStorage::get("settings").unwrap_or(Settings::new())
+            settings: LocalStorage::get("settings").unwrap_or_else(|_| Settings::new())
         }
     }
 
@@ -168,8 +170,8 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         match self.yaixm.as_ref() {
             Some(yaixm) => {
-                let airspace_callback = ctx.link().callback(|s| Msg::AirspaceSet(s));
-                let loa_callback = ctx.link().callback(|s| Msg::LoaSet(s));
+                let airspace_callback = ctx.link().callback(Msg::AirspaceSet);
+                let loa_callback = ctx.link().callback(Msg::LoaSet);
                 let save_callback = ctx.link().callback(|_| Msg::Save);
 
                 let airspace_settings = self.settings.airspace.clone();

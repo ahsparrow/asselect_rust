@@ -27,7 +27,7 @@ pub fn tabs(props: &Props) -> Html {
             .tab_names
             .iter()
             .zip(0..)
-            .map(|(t, id)| html! {<li class={classes!((*tab == id).then(|| Some("is-active")))}><a id={id.to_string()}>{t}</a></li>})
+            .map(|(t, id)| html! {<li class={classes!((*tab == id).then_some("is-active"))}><a id={id.to_string()}>{t}</a></li>})
             .collect()
     };
 

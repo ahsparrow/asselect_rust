@@ -16,8 +16,8 @@ pub fn airspace_tab(props: &Props) -> Html {
         let value = e.target_unchecked_into::<HtmlInputElement>().value();
 
         AirspaceSetting {
-            id: id,
-            value: value,
+            id,
+            value,
         }
     });
 
