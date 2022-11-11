@@ -4,10 +4,10 @@ use components::{Tabs, AirspaceTab, OptionsTab, ExtraTab, NotamTab,
                  RatPanel, LoaPanel, WavePanel};
 use gloo_storage::{LocalStorage, Storage};
 use serde::{Deserialize, Serialize};
-use serde_json::Value as JsonValue;
 use std::collections::HashSet;
 use yew::{html, Component, Context, Html};
 use yaixm::util::{fetch_yaixm, gliding_sites, loa_names};
+use yaixm::yaixm::Yaixm;
 
 mod components;
 mod yaixm;
@@ -85,12 +85,12 @@ enum Msg {
     AirspaceSet(AirspaceSetting),
     LoaSet(LoaSetting),
     YaixmError,
-    YaixmData(JsonValue),
+    YaixmData(Yaixm),
 }
 
 // App component
 struct App {
-    yaixm: Option<JsonValue>,
+    yaixm: Option<Yaixm>,
     settings: Settings,
 }
 
@@ -101,7 +101,7 @@ impl Component for App {
     fn create(ctx: &Context<Self>) -> Self {
         ctx.link().send_future(async {
             match fetch_yaixm().await {
-                Ok(json) => Msg::YaixmData(json),
+                Ok(yaixm) => Msg::YaixmData(yaixm),
                 Err(_err) => Msg::YaixmError,
             }
         });
@@ -114,8 +114,8 @@ impl Component for App {
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
         match msg {
-            Msg::YaixmData(json) => {
-                self.yaixm = Some(json);
+            Msg::YaixmData(yaixm) => {
+                self.yaixm = Some(yaixm);
                 true
             }
             Msg::YaixmError => {
