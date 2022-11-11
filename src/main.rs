@@ -2,11 +2,15 @@
 
 use components::{Tabs, AirspaceTab, OptionsTab, ExtraTab, NotamTab,
                  RatPanel, LoaPanel, WavePanel};
+use gloo_file::{Blob, ObjectUrl};
 use gloo_storage::{LocalStorage, Storage};
+use gloo_utils::document;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
+use wasm_bindgen::JsCast;
 use yew::{html, Component, Context, Html};
 use yaixm::util::{fetch_yaixm, gliding_sites, loa_names};
+use yaixm::openair::openair;
 use yaixm::Yaixm;
 
 mod components;
@@ -153,10 +157,28 @@ impl App {
                 <button class="button is-primary" onclick={save_callback}>
                   {"Save"}
                 </button>
+                <a id="download" hidden=true download="openair.txt">{"Download"}</a>
               </div>
             </div>
             </>
         }
+    }
+
+    fn save(&self) {
+        LocalStorage::set("settings", self.settings.clone()).unwrap();
+
+        let oa = openair(&self.yaixm.as_ref().unwrap()).join("\n");
+        let blob = Blob::new(oa.as_str());
+        let object_url = ObjectUrl::from(blob);
+
+        let download_anchor = document()
+            .get_element_by_id("download")
+            .expect("No document")
+            .dyn_into::<web_sys::HtmlAnchorElement>()
+            .expect("No anchor element");
+
+        download_anchor.set_href(&object_url);
+        download_anchor.click();
     }
 }
 
@@ -213,7 +235,7 @@ impl Component for App {
             }
             Msg::Save =>
             {
-                LocalStorage::set("settings", self.settings.clone()).unwrap();
+                self.save();
                 false
             }
         }
