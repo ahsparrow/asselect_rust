@@ -1,6 +1,6 @@
 use gloo_net::http::Request;
 use gloo_net::Error;
-use crate::yaixm::yaixm::{IcaoType, LocalType, Yaixm};
+use crate::yaixm::{IcaoType, LocalType, Yaixm};
 
 pub async fn fetch_yaixm() -> Result<Yaixm, Error> {
     let result = Request::get("yaixm.json").send().await;
