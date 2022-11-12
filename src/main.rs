@@ -45,7 +45,7 @@ impl Default for Airspace {
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub struct Options {
-    max_flight_level: u16,
+    max_level: u16,
     radio: bool,
     north: f64,
     south: f64,
@@ -55,7 +55,7 @@ pub struct Options {
 impl Default for Options {
     fn default() -> Self {
         Options {
-            max_flight_level: 600,
+            max_level: 600,
             radio: false,
             north: 59.0,
             south: 49.0,
@@ -117,6 +117,7 @@ impl App {
         let save_callback = ctx.link().callback(|_| Msg::Save);
 
         let airspace_settings = self.settings.airspace.clone();
+        let airspace_options = self.settings.options.clone();
 
         let mut gliding_sites = gliding_sites(yaixm);
         gliding_sites.sort();
@@ -142,8 +143,8 @@ impl App {
             </div>
             <div class="container">
               <Tabs {tab_names}>
-                <AirspaceTab settings={airspace_settings} {gliding_sites} callback={airspace_callback} />
-                <OptionsTab />
+                <AirspaceTab settings={airspace_settings} {gliding_sites} callback={airspace_callback.clone()} />
+                <OptionsTab options={airspace_options} callback={airspace_callback.clone()} />
                 <ExtraTab>
                   <RatPanel />
                   <LoaPanel names={loa_names} selected={loa_selected} callback={loa_callback}/>
@@ -211,6 +212,7 @@ impl Component for App {
                 false
             }
             Msg::AirspaceSet(setting) => {
+                log::info!("Setting {}: {}", setting.id, setting.value);
                 let value = setting.value;
                 match setting.id.as_str() {
                     "atz" => self.settings.airspace.atz = value,
@@ -221,6 +223,13 @@ impl Component for App {
                     "home" => self.settings.airspace.home = value,
                     "hirta_gvs" => self.settings.airspace.hirta_gvs = value,
                     "obstacle" => self.settings.airspace.obstacle = value,
+
+                    "max_level" => self.settings.options.max_level = value.parse::<u16>().unwrap(),
+                    "radio" => self.settings.options.radio = value == "yes",
+                    "north" => self.settings.options.north = value.parse::<f64>().unwrap(),
+                    "south" => self.settings.options.south = value.parse::<f64>().unwrap(),
+                    "format" => self.settings.options.format = value,
+
                     _ => (),
                 }
                 true
