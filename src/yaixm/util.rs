@@ -27,16 +27,16 @@ pub fn loa_names(yaixm: &Yaixm) -> Vec<String> {
 
 pub fn wav_names(yaixm: &Yaixm) -> Vec<String> {
     yaixm.airspace.iter()
-        .filter(|x| x.icao_type == IcaoType::D_OTHER &&
-                x.local_type == Some(LocalType::GLIDER))
+        .filter(|x| x.icao_type == IcaoType::DOther &&
+                x.local_type == Some(LocalType::Glider))
         .map(|x| x.name.clone())
         .collect::<Vec<String>>()
 }
 
 pub fn gliding_sites(yaixm: &Yaixm) -> Vec<String> {
     yaixm.airspace.iter()
-        .filter(|x| x.icao_type == IcaoType::OTHER &&
-                x.local_type == Some(LocalType::GLIDER))
+        .filter(|x| x.icao_type == IcaoType::Other &&
+                x.local_type == Some(LocalType::Glider))
         .map(|x| x.name.clone())
         .collect::<Vec<String>>()
 }

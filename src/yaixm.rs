@@ -26,48 +26,76 @@ pub fn icao_class_str(class: &IcaoClass) -> &'static str {
     }
 }
 
-#[derive(Deserialize, PartialEq, Debug)]
+#[derive(Deserialize, Eq, PartialEq, Debug)]
 #[allow(nonstandard_style)]
 pub enum IcaoType {
-    ATZ,     // Air Traffic Zone
-    AWY,     // Airway
-    CTA,     // Control area. Upwards from a specified limit
-    CTR,     // Control zone. Upwards from the surface
-    D,       // Danger area
-    D_OTHER, // Dangerous activity, but not a Danger area
-    OTHER,   // As specified by localtype
-    P,       // Prohibited area
-    R,       // Restricted area
-    TMA,     // Terminal control area
+    #[serde(rename="ATZ")]
+    Atz,
+    #[serde(rename="AWY")]
+    Awy,
+    #[serde(rename="CTA")]
+    Cta,
+    #[serde(rename="CTR")]
+    Ctr,
+    D,
+    #[serde(rename="D_OTHER")]
+    DOther,
+    #[serde(rename="OTHER")]
+    Other,
+    P,
+    R,
+    #[serde(rename="TMA")]
+    Tma,
 }
 
-#[derive(Deserialize, PartialEq, Debug)]
+#[derive(Deserialize, Eq, PartialEq, Debug)]
 pub enum LocalType {
-    DZ,     // Parachute drop zone
-    GLIDER, // Gliding operations
-    GVS,    // Gas venting station
-    HIRTA,  // High intensity radio transmission area
-    ILS,    // ILS feather
-    LASER,  // Laser site
-    MATZ,   // Military ATZ
-    NOATZ,  // Non-ATZ airfield
-    RAT,    // Temporary restricted area
-    RMZ,    // Radio mandatory zone
-    UL,     // Ultra-light strip
-    TMZ,    // Transponder mandatory zone
+    #[serde(rename="DZ")]
+    Dz,
+    #[serde(rename="GLIDER")]
+    Glider,
+    #[serde(rename="GVS")]
+    Gvs,
+    #[serde(rename="HIRTA")]
+    Hirta,
+    #[serde(rename="ILS")]
+    Ils,
+    #[serde(rename="LASER")]
+    Laser,
+    #[serde(rename="MATZ")]
+    Matz,
+    #[serde(rename="NOATZ")]
+    NoAtz,
+    #[serde(rename="RAT")]
+    Rat,
+    #[serde(rename="RMZ")]
+    Rmz,
+    #[serde(rename="UL")]
+    Ul,
+    #[serde(rename="TMZ")]
+    Tmz,
 }
 
-#[derive(Clone, Deserialize, Debug, PartialEq)]
+#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
 pub enum Rule {
-    INTENSE, // Intense activity
-    LOA,     // Letter of agreement
-    NOSSR,   // Non-SSR area
-    NOTAM,   // NOTAM activated
-    RAZ,     // Radio advisory zone
-    RMZ,     // Radio mandatory zone
-    SI,      // Statutary Instrument
-    TRA,     // Temporary reserved area
-    TMZ,     // Transponder mandatory zone
+    #[serde(rename="INTENSE")]
+    Intense,
+    #[serde(rename="LOA")]
+    Loa,
+    #[serde(rename="NOSSR")]
+    NoSsr,
+    #[serde(rename="NOTAM")]
+    Notam,
+    #[serde(rename="RAZ")]
+    Raz,
+    #[serde(rename="RMZ")]
+    Rmz,
+    #[serde(rename="SI")]
+    Si,
+    #[serde(rename="TRA")]
+    Tra,
+    #[serde(rename="TMZ")]
+    Tmz,
 }
 
 #[derive(Deserialize, Debug)]

@@ -175,7 +175,7 @@ impl App {
     fn save(&self) {
         LocalStorage::set("settings", self.settings.clone()).unwrap();
 
-        let oa = openair(&self.yaixm.as_ref().unwrap()).join("\n");
+        let oa = openair(self.yaixm.as_ref().unwrap()).join("\n");
         let blob = Blob::new(oa.as_str());
         let object_url = ObjectUrl::from(blob);
 
