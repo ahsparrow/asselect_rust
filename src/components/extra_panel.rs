@@ -1,22 +1,23 @@
-use crate::LoaSetting;
+use crate::ExtraSetting;
 use std::collections::HashSet;
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, Callback, Event, Html, Properties, TargetCast};
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
+    pub category: String,
     pub names: Vec<String>,
     pub selected: HashSet<String>,
-    pub callback: Callback<LoaSetting>,
+    pub callback: Callback<ExtraSetting>,
 }
 
-#[function_component(LoaPanel)]
-pub fn loa_panel(props: &Props) -> Html {
+#[function_component(ExtraPanel)]
+pub fn extra_panel(props: &Props) -> Html {
     let onchange = props.callback.reform(|e: Event| {
         let id = e.target_unchecked_into::<HtmlInputElement>().id();
         let checked = e.target_unchecked_into::<HtmlInputElement>().checked();
 
-        LoaSetting {
+        ExtraSetting {
             id,
             checked,
         }
@@ -27,11 +28,12 @@ pub fn loa_panel(props: &Props) -> Html {
         {
             props.names.iter().map(|name| {
                 let checked = props.selected.contains(name);
+                let id = format!("{}-{}", props.category, name);
                 html!(
                       <div class="column is-one-third">
                         <div class="field">
                         <label class="checkbox">
-                          <input type="checkbox" class="mr-1" {checked} id={name.clone()} onchange={onchange.clone()} />
+                          <input type="checkbox" class="mr-1" {checked} id={id} onchange={onchange.clone()} />
                             {name}
                         </label>
                         </div>

@@ -10,10 +10,25 @@ pub async fn fetch_yaixm() -> Result<Yaixm, Error> {
     }
 }
 
+pub fn rat_names(yaixm: &Yaixm) -> Vec<String> {
+    let rat = &yaixm.rat;
+    rat.iter()
+        .map(|x| x.name.clone())
+        .collect::<Vec<String>>()
+}
+
 pub fn loa_names(yaixm: &Yaixm) -> Vec<String> {
     let loa = &yaixm.loa;
     loa.iter()
         .filter(|x| !x.default.unwrap_or(false))
+        .map(|x| x.name.clone())
+        .collect::<Vec<String>>()
+}
+
+pub fn wav_names(yaixm: &Yaixm) -> Vec<String> {
+    yaixm.airspace.iter()
+        .filter(|x| x.icao_type == IcaoType::D_OTHER &&
+                x.local_type == Some(LocalType::GLIDER))
         .map(|x| x.name.clone())
         .collect::<Vec<String>>()
 }

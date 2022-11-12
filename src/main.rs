@@ -1,7 +1,7 @@
 #![allow(clippy::let_unit_value)] // For problem in html! macro
 
 use components::{Tabs, AirspaceTab, OptionsTab, ExtraTab, NotamTab,
-                 RatPanel, LoaPanel, WavePanel};
+                 ExtraPanel};
 use gloo_file::{Blob, ObjectUrl};
 use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use wasm_bindgen::JsCast;
 use yew::{html, Component, Context, Html};
-use yaixm::util::{fetch_yaixm, gliding_sites, loa_names};
+use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
 use yaixm::openair::openair;
 use yaixm::Yaixm;
 
@@ -70,7 +70,7 @@ pub struct Settings {
     options: Options,
     loa: HashSet<String>,
     rat: HashSet<String>,
-    wave: HashSet<String>,
+    wav: HashSet<String>,
 }
 
 pub struct AirspaceSetting {
@@ -78,7 +78,7 @@ pub struct AirspaceSetting {
     pub value: String,
 }
 
-pub struct LoaSetting {
+pub struct ExtraSetting {
     pub id: String,
     pub checked: bool
 }
@@ -87,7 +87,7 @@ pub struct LoaSetting {
 enum Msg {
     Save,
     AirspaceSet(AirspaceSetting),
-    LoaSet(LoaSetting),
+    ExtraSet(ExtraSetting),
     YaixmError,
     YaixmData(Yaixm),
 }
@@ -113,7 +113,7 @@ impl App {
 
     fn yaixm_view(&self, ctx: &Context<Self>, yaixm: &Yaixm) -> Html {
         let airspace_callback = ctx.link().callback(Msg::AirspaceSet);
-        let loa_callback = ctx.link().callback(Msg::LoaSet);
+        let extra_callback = ctx.link().callback(Msg::ExtraSet);
         let save_callback = ctx.link().callback(|_| Msg::Save);
 
         let airspace_settings = self.settings.airspace.clone();
@@ -122,8 +122,15 @@ impl App {
         let mut gliding_sites = gliding_sites(yaixm);
         gliding_sites.sort();
 
+        let rat_selected = self.settings.rat.clone();
+        let rat_names = rat_names(yaixm);
+
         let loa_selected = self.settings.loa.clone();
         let loa_names = loa_names(yaixm);
+
+        let wav_selected = self.settings.wav.clone();
+        let mut wav_names = wav_names(yaixm);
+        wav_names.sort();
 
         let tab_names = vec![
             "Main".to_string(),
@@ -146,9 +153,9 @@ impl App {
                 <AirspaceTab settings={airspace_settings} {gliding_sites} callback={airspace_callback.clone()} />
                 <OptionsTab options={airspace_options} callback={airspace_callback.clone()} />
                 <ExtraTab>
-                  <RatPanel />
-                  <LoaPanel names={loa_names} selected={loa_selected} callback={loa_callback}/>
-                  <WavePanel />
+                  <ExtraPanel category="rat" names={rat_names} selected={rat_selected} callback={extra_callback.clone()}/>
+                  <ExtraPanel category="loa" names={loa_names} selected={loa_selected} callback={extra_callback.clone()}/>
+                  <ExtraPanel category="wav" names={wav_names} selected={wav_selected} callback={extra_callback.clone()}/>
                 </ExtraTab>
                 <NotamTab />
               </Tabs>
@@ -234,11 +241,18 @@ impl Component for App {
                 }
                 true
             }
-            Msg::LoaSet(setting) => {
+            Msg::ExtraSet(setting) => {
+                log::info!("{} {}", setting.id, setting.checked);
+                let set = match setting.id[0..3].as_ref() {
+                    "rat" => &mut self.settings.rat,
+                    "loa" => &mut self.settings.loa,
+                    _ => &mut self.settings.wav,
+                };
+
                 if setting.checked {
-                    self.settings.loa.replace(setting.id);
+                    set.replace(setting.id[4..].to_string());
                 } else {
-                    self.settings.loa.remove(&setting.id);
+                    set.remove(&setting.id[4..].to_string());
                 }
                 true
             }
