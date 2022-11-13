@@ -1,11 +1,11 @@
-use crate::ExtraSetting;
+use crate::{ExtraCategory, ExtraSetting};
 use std::collections::HashSet;
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, Callback, Event, Html, Properties, TargetCast};
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
-    pub category: String,
+    pub category: ExtraCategory,
     pub names: Vec<String>,
     pub selected: HashSet<String>,
     pub callback: Callback<ExtraSetting>,
@@ -13,12 +13,14 @@ pub struct Props {
 
 #[function_component(ExtraPanel)]
 pub fn extra_panel(props: &Props) -> Html {
-    let onchange = props.callback.reform(|e: Event| {
-        let id = e.target_unchecked_into::<HtmlInputElement>().id();
+    let category = props.category.clone();
+    let onchange = props.callback.reform(move |e: Event| {
+        let name = e.target_unchecked_into::<HtmlInputElement>().name();
         let checked = e.target_unchecked_into::<HtmlInputElement>().checked();
 
         ExtraSetting {
-            id,
+            category,
+            name,
             checked,
         }
     });
@@ -28,12 +30,11 @@ pub fn extra_panel(props: &Props) -> Html {
         {
             props.names.iter().map(|name| {
                 let checked = props.selected.contains(name);
-                let id = format!("{}-{}", props.category, name);
                 html!(
                       <div class="column is-one-third">
                         <div class="field">
                         <label class="checkbox">
-                          <input type="checkbox" class="mr-1" {checked} id={id} onchange={onchange.clone()} />
+                          <input type="checkbox" class="mr-1" {checked} name={name.clone()} onchange={onchange.clone()} />
                             {name}
                         </label>
                         </div>

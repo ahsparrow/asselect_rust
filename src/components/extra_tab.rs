@@ -1,4 +1,5 @@
-use yew::{html, Children, Component, Context, Html, Properties};
+use crate::ExtraCategory;
+use yew::{html, Callback, Children, Component, Context, Html, Properties};
 
 pub enum Msg {
     Click(u8),
@@ -8,6 +9,8 @@ pub enum Msg {
 pub struct Props {
     pub children: Children,
     pub names: Vec<String>,
+    pub categories: Vec<ExtraCategory>,
+    pub on_clear: Callback<ExtraCategory>,
 }
 
 pub struct ExtraTab {
@@ -19,9 +22,7 @@ impl Component for ExtraTab {
     type Properties = Props;
 
     fn create(_ctx: &Context<Self>) -> Self {
-        ExtraTab {
-            active_panel: 0,
-        }
+        ExtraTab { active_panel: 0 }
     }
 
     fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
@@ -34,31 +35,53 @@ impl Component for ExtraTab {
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
-        let iter = ctx.props().names.iter().zip(ctx.props().children.iter()).zip(0..);
+        let link = ctx.link();
+        let props = ctx.props();
 
-        let panels = iter.map(|((name, child), n)| html!{
-            <div class="card mb-4">
-              <header class="card-header is-clickable" onclick={ctx.link().callback(move |_| Msg::Click(n))}>
-                <p class="card-header-title">
-                  { name }
-                </p>
+        let category = props.categories[self.active_panel as usize].clone();
+        let on_clear = props.on_clear.reform(move |_| category.clone());
 
-                {
-                  if n != self.active_panel {
-                      html! {
-                        <i class="card-header-icon">{ "+" }</i>
-                      }
-                  } else {
-                      html! {}
-                  }
+        let iter = props.names.iter().zip(props.children.iter()).zip(0..);
+        let panels = iter
+            .map(|((name, child), n)| {
+                html! {
+                    <div class="card mb-4">
+                      <header class="card-header is-clickable"
+                              onclick={link.callback(move |_| Msg::Click(n))}>
+                        <level class="card-header-title">
+                          <p>{ name }</p>
+                          {
+                            if n == self.active_panel {
+                              html! {
+                                <button class="button is-link is-light is-small ml-4"
+                                        onclick={on_clear.clone()}>
+                                  {"Clear"}
+                                </button>
+                                }
+                            } else {
+                                html! ()
+                            }
+                          }
+                        </level>
+
+                        {
+                          if n != self.active_panel {
+                              html! {
+                                <i class="card-header-icon">{ "+" }</i>
+                              }
+                          } else {
+                              html! {}
+                          }
+                        }
+                      </header>
+
+                      <div class="card-content" hidden={n != self.active_panel}>
+                        { child }
+                      </div>
+                    </div>
                 }
-
-              </header>
-              <div class="card-content" hidden={n != self.active_panel}>
-                { child }
-              </div>
-            </div>
-        }).collect::<Html>();
+            })
+            .collect::<Html>();
 
         html! {
             <div>

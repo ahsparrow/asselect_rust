@@ -1,17 +1,16 @@
 #![allow(clippy::let_unit_value)] // For problem in html! macro
 
-use components::{Tabs, AirspaceTab, OptionsTab, ExtraTab, NotamTab,
-                 ExtraPanel};
+use components::{AirspaceTab, ExtraPanel, ExtraTab, NotamTab, OptionsTab, Tabs};
 use gloo_file::{Blob, ObjectUrl};
 use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use wasm_bindgen::JsCast;
-use yew::{html, Component, Context, Html};
-use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
 use yaixm::openair::openair;
+use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
 use yaixm::Yaixm;
+use yew::{html, Component, Context, Html};
 
 mod components;
 mod yaixm;
@@ -38,7 +37,7 @@ impl Default for Airspace {
             gliding: "exclude".to_string(),
             home: "None".to_string(),
             hirta_gvs: "exclude".to_string(),
-            obstacle: "exclude".to_string()
+            obstacle: "exclude".to_string(),
         }
     }
 }
@@ -78,15 +77,25 @@ pub struct AirspaceSetting {
     pub value: String,
 }
 
-pub struct ExtraSetting {
-    pub id: String,
-    pub checked: bool
+#[derive(Clone, Copy, PartialEq)]
+pub enum ExtraCategory {
+    Rat,
+    Loa,
+    Wave,
 }
+
+pub struct ExtraSetting {
+    pub category: ExtraCategory,
+    pub name: String,
+    pub checked: bool,
+}
+
 
 // App messages
 enum Msg {
     Save,
     AirspaceSet(AirspaceSetting),
+    ExtraClear(ExtraCategory),
     ExtraSet(ExtraSetting),
     YaixmError,
     YaixmData(Yaixm),
@@ -132,11 +141,11 @@ impl App {
         let mut wav_names = wav_names(yaixm);
         wav_names.sort();
 
-        let extra_names = vec!(
+        let extra_names = vec![
             "Temporary Restrictions, RA(T)".to_string(),
             "Local Agreements".to_string(),
             "Wave Boxes".to_string(),
-        );
+        ];
 
         let tab_names = vec![
             "Main".to_string(),
@@ -144,6 +153,8 @@ impl App {
             "Extra".to_string(),
             "NOTAM".to_string(),
         ];
+
+        let on_clear = ctx.link().callback(Msg::ExtraClear);
 
         html! {
             <>
@@ -158,10 +169,10 @@ impl App {
               <Tabs {tab_names}>
                 <AirspaceTab settings={airspace_settings} {gliding_sites} callback={airspace_callback.clone()} />
                 <OptionsTab options={airspace_options} callback={airspace_callback.clone()} />
-                <ExtraTab names={extra_names}>
-                  <ExtraPanel category="rat" names={rat_names} selected={rat_selected} callback={extra_callback.clone()}/>
-                  <ExtraPanel category="loa" names={loa_names} selected={loa_selected} callback={extra_callback.clone()}/>
-                  <ExtraPanel category="wav" names={wav_names} selected={wav_selected} callback={extra_callback.clone()}/>
+                <ExtraTab names={extra_names} categories={vec![ExtraCategory::Rat, ExtraCategory::Loa, ExtraCategory::Wave]} on_clear={on_clear.clone()}>
+                  <ExtraPanel category={ExtraCategory::Rat} names={rat_names} selected={rat_selected} callback={extra_callback.clone()}/>
+                  <ExtraPanel category={ExtraCategory::Loa} names={loa_names} selected={loa_selected} callback={extra_callback.clone()}/>
+                  <ExtraPanel category={ExtraCategory::Wave} names={wav_names} selected={wav_selected} callback={extra_callback.clone()}/>
                 </ExtraTab>
                 <NotamTab />
               </Tabs>
@@ -247,23 +258,29 @@ impl Component for App {
                 }
                 true
             }
-            Msg::ExtraSet(setting) => {
-                log::info!("{} {}", setting.id, setting.checked);
-                let set = match setting.id[0..3].as_ref() {
-                    "rat" => &mut self.settings.rat,
-                    "loa" => &mut self.settings.loa,
-                    _ => &mut self.settings.wav,
-                };
-
-                if setting.checked {
-                    set.replace(setting.id[4..].to_string());
-                } else {
-                    set.remove(&setting.id[4..].to_string());
+            Msg::ExtraClear(category) => {
+                match category {
+                    ExtraCategory::Rat => self.settings.rat.clear(),
+                    ExtraCategory::Loa => self.settings.loa.clear(),
+                    ExtraCategory::Wave => self.settings.wav.clear(),
                 }
                 true
             }
-            Msg::Save =>
-            {
+            Msg::ExtraSet(setting) => {
+                let set = match setting.category {
+                    ExtraCategory::Rat => &mut self.settings.rat,
+                    ExtraCategory::Loa => &mut self.settings.loa,
+                    ExtraCategory::Wave => &mut self.settings.wav,
+                };
+
+                if setting.checked {
+                    set.replace(setting.name);
+                } else {
+                    set.remove(&setting.name);
+                }
+                true
+            }
+            Msg::Save => {
                 self.save();
                 false
             }
