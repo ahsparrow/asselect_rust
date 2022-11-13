@@ -38,7 +38,7 @@ impl Component for ExtraTab {
 
         let panels = iter.map(|((name, child), n)| html!{
             <div class="card mb-4">
-              <header class="card-header">
+              <header class="card-header is-clickable" onclick={ctx.link().callback(move |_| Msg::Click(n))}>
                 <p class="card-header-title">
                   { name }
                 </p>
@@ -46,11 +46,7 @@ impl Component for ExtraTab {
                 {
                   if n != self.active_panel {
                       html! {
-                        <button class="card-header-icon" onclick={ctx.link().callback(move |_| Msg::Click(n))}>
-                          <span>
-                            <i>{ "+" }</i>
-                          </span>
-                        </button>
+                        <i class="card-header-icon">{ "+" }</i>
                       }
                   } else {
                       html! {}
