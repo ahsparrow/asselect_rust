@@ -36,8 +36,7 @@ pub fn tabs(props: &Props) -> Html {
             .children
             .iter()
             .zip(0..)
-            .filter(|(_t, id)| *tab == *id)
-            .map(|x| x.0)
+            .map(|(p, id)| html! {<div hidden={id != *tab}>{p}</div>})
             .collect::<Html>()
     };
 
