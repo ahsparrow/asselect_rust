@@ -132,6 +132,12 @@ impl App {
         let mut wav_names = wav_names(yaixm);
         wav_names.sort();
 
+        let extra_names = vec!(
+            "Temporary Restrictions, RA(T)".to_string(),
+            "Local Agreements".to_string(),
+            "Wave Boxes".to_string(),
+        );
+
         let tab_names = vec![
             "Main".to_string(),
             "Options".to_string(),
@@ -152,7 +158,7 @@ impl App {
               <Tabs {tab_names}>
                 <AirspaceTab settings={airspace_settings} {gliding_sites} callback={airspace_callback.clone()} />
                 <OptionsTab options={airspace_options} callback={airspace_callback.clone()} />
-                <ExtraTab>
+                <ExtraTab names={extra_names}>
                   <ExtraPanel category="rat" names={rat_names} selected={rat_selected} callback={extra_callback.clone()}/>
                   <ExtraPanel category="loa" names={loa_names} selected={loa_selected} callback={extra_callback.clone()}/>
                   <ExtraPanel category="wav" names={wav_names} selected={wav_selected} callback={extra_callback.clone()}/>

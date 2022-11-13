@@ -12,8 +12,9 @@ pub struct Props {
 #[function_component(AirspaceTab)]
 pub fn airspace_tab(props: &Props) -> Html {
     let onchange = props.callback.reform(|e: Event| {
-        let id = e.target_unchecked_into::<HtmlInputElement>().id();
-        let value = e.target_unchecked_into::<HtmlInputElement>().value();
+        let element = e.target_unchecked_into::<HtmlInputElement>();
+        let id = element.id();
+        let value = element.value();
 
         AirspaceSetting {
             id,

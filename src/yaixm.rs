@@ -14,7 +14,7 @@ pub enum IcaoClass {
     G,
 }
 
-pub fn icao_class_str(class: &IcaoClass) -> &'static str {
+pub fn _icao_class_str(class: &IcaoClass) -> &'static str {
     match class {
         IcaoClass::A => "A",
         IcaoClass::B => "B",
