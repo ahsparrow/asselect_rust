@@ -1,5 +1,8 @@
-use web_sys::HtmlElement;
-use yew::{function_component, html, use_state, Callback, Children, Html, MouseEvent, Properties, TargetCast};
+use yew::{html, Children, Component, Context, Html, Properties};
+
+pub enum Msg {
+    Click(u8),
+}
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -7,41 +10,54 @@ pub struct Props {
     pub names: Vec<String>,
 }
 
-#[function_component(ExtraTab)]
-pub fn extra_tab(props: &Props) -> Html {
-    let panel = use_state(|| 0);
+pub struct ExtraTab {
+    active_panel: u8,
+}
 
-    let onclick = {
-        let panel = panel.clone();
-        Callback::from(move |e: MouseEvent| {
-            let id: u8 = e.target_unchecked_into::<HtmlElement>().id().parse().unwrap();
-            panel.set(id)
-        })
-    };
+impl Component for ExtraTab {
+    type Message = Msg;
+    type Properties = Props;
 
-    let iter = props.names.iter().zip(props.children.iter()).zip(0..);
+    fn create(_ctx: &Context<Self>) -> Self {
+        ExtraTab {
+            active_panel: 0,
+        }
+    }
 
-    let panels = iter.map(|((name, child), n)| html!{
-        <div class="card mb-4">
-          <header class="card-header">
-            <p class="card-header-title">
-              { name }
-            </p>
-            <button id={n.to_string()} class="card-header-icon" onclick={onclick.clone()}>
-              <span id={n.to_string()}>
-                <i id={n.to_string()}>{ "+" }</i>
-              </span>
-            </button>
-          </header>
-          <div class="card-content" hidden={n != *panel}>
-            { child }
-          </div>
-        </div>
-    }).collect::<Html>();
+    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::Click(panel) => {
+                self.active_panel = panel;
+                true
+            }
+        }
+    }
 
-    html! {
-        <div>
-          { panels }
-        </div>
+    fn view(&self, ctx: &Context<Self>) -> Html {
+        let iter = ctx.props().names.iter().zip(ctx.props().children.iter()).zip(0..);
+
+        let panels = iter.map(|((name, child), n)| html!{
+            <div class="card mb-4">
+              <header class="card-header">
+                <p class="card-header-title">
+                  { name }
+                </p>
+                <button class="card-header-icon" onclick={ctx.link().callback(move |_| Msg::Click(n))}>
+                  <span>
+                    <i>{ "+" }</i>
+                  </span>
+                </button>
+              </header>
+              <div class="card-content" hidden={n != self.active_panel}>
+                { child }
+              </div>
+            </div>
+        }).collect::<Html>();
+
+        html! {
+            <div>
+              { panels }
+            </div>
+        }
     }
 }
