@@ -42,11 +42,21 @@ impl Component for ExtraTab {
                 <p class="card-header-title">
                   { name }
                 </p>
-                <button class="card-header-icon" onclick={ctx.link().callback(move |_| Msg::Click(n))}>
-                  <span>
-                    <i>{ "+" }</i>
-                  </span>
-                </button>
+
+                {
+                  if n != self.active_panel {
+                      html! {
+                        <button class="card-header-icon" onclick={ctx.link().callback(move |_| Msg::Click(n))}>
+                          <span>
+                            <i>{ "+" }</i>
+                          </span>
+                        </button>
+                      }
+                  } else {
+                      html! {}
+                  }
+                }
+
               </header>
               <div class="card-content" hidden={n != self.active_panel}>
                 { child }
