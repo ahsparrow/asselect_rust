@@ -13,11 +13,11 @@ pub struct Props {
 pub fn airspace_tab(props: &Props) -> Html {
     let onchange = props.callback.reform(|e: Event| {
         let element = e.target_unchecked_into::<HtmlInputElement>();
-        let id = element.id();
+        let name = element.name();
         let value = element.value();
 
         AirspaceSetting {
-            id,
+            name,
             value,
         }
     });
@@ -44,7 +44,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <label class="label is-small">{"ATZ:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select id="atz" onchange={onchange.clone()}>
+                    <select name="atz" onchange={onchange.clone()}>
                       <option value="classd" selected={set.atz == "classd"}>{"Class D"}</option>
                       <option value="ctr" selected={set.atz == "ctr"}>{"Control Zone"}</option>
                     </select>
@@ -58,7 +58,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <label class="label is-small">{"ILS Feather:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select id="ils" onchange={onchange.clone()}>
+                    <select name="ils" onchange={onchange.clone()}>
                       <option value="atz" selected={set.ils == "atz"}>{"As ATZ"}</option>
                       <option value="classf" selected={set.ils == "classf"}>{"Class F"}</option>
                       <option value="classg" selected={set.ils == "classg"}>{"Class G"}</option>
@@ -76,7 +76,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <label class="label is-small">{"Unlicensed Airfield:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select id="unlicensed" onchange={onchange.clone()}>
+                    <select name="unlicensed" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.unlicensed == "exclude"}>{"Exclude"}</option>
                       <option value="classf" selected={set.unlicensed == "classf"}>{"Class F"}</option>
                       <option value="classg" selected={set.unlicensed == "classg"}>{"Class G"}</option>
@@ -91,7 +91,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <label class="label is-small">{"Microlight Airfield:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select id="microlight" onchange={onchange.clone()}>
+                    <select name="microlight" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.microlight == "exclude"}>{"Exclude"}</option>
                       <option value="classf" selected={set.microlight == "classf"}>{"Class F"}</option>
                       <option value="classg" selected={set.microlight == "classg"}>{"Class G"}</option>
@@ -109,7 +109,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <label class="label is-small">{"Gliding Airfield:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select id="gliding" onchange={onchange.clone()}>
+                    <select name="gliding" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.unlicensed == "exclude"}>{"Exclude"}</option>
                       <option value="glidingsector" selected={set.unlicensed == "glidingsector"}>{"Gliding Sector"}</option>
                       <option value="classf" selected={set.unlicensed == "classf"}>{"Class F"}</option>
@@ -125,7 +125,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <label class="label is-small">{"Exclude Home Airfield:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select id="home" onchange={onchange.clone()}>
+                    <select name="home" onchange={onchange.clone()}>
                       <option selected={set.home=="None"}>{"None"}</option>
                       { gliding_sites() }
                     </select>
@@ -142,7 +142,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <label class="label is-small">{"HIRTA/GVS:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select id="hirta_gvs" onchange={onchange.clone()}>
+                    <select name="hirta_gvs" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.unlicensed == "exclude"}>{"Exclude"}</option>
                       <option value="danger" selected={set.unlicensed == "danger"}>{"Danger"}</option>
                       <option value="restricted" selected={set.unlicensed == "restricted"}>{"Restricted"}</option>
@@ -157,7 +157,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <label class="label is-small">{"Obstacle:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select id="obstacle" onchange={onchange.clone()}>
+                    <select name="obstacle" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.unlicensed == "exclude"}>{"Exclude"}</option>
                       <option value="include" selected={set.unlicensed == "include"}>{"Include"}</option>
                     </select>

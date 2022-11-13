@@ -12,22 +12,30 @@ pub struct Props {
 
 #[function_component(Tabs)]
 pub fn tabs(props: &Props) -> Html {
-    let tab = use_state(|| 0);
+    let tab = use_state(|| "tab-0".to_string());
 
     let onclick = {
         let tab = tab.clone();
         Callback::from(move |e: MouseEvent| {
-            let id: u8 = e.target_unchecked_into::<HtmlElement>().id().parse().unwrap();
+            let id: String = e.target_unchecked_into::<HtmlElement>().id().parse().unwrap();
             tab.set(id);
         })
     };
+
+    let tab_id = |id: usize| format!("tab-{}", id);
 
     let tabs = || -> Html {
         props
             .tab_names
             .iter()
             .zip(0..)
-            .map(|(t, id)| html! {<li class={classes!((*tab == id).then_some("is-active"))}><a id={id.to_string()}>{t}</a></li>})
+            .map(|(t, id)| html! {
+                <li class={classes!((*tab == tab_id(id)).then_some("is-active"))}>
+                  <a id={tab_id(id)}>
+                    {t}
+                  </a>
+                </li>
+            })
             .collect()
     };
 
@@ -36,7 +44,11 @@ pub fn tabs(props: &Props) -> Html {
             .children
             .iter()
             .zip(0..)
-            .map(|(p, id)| html! {<div hidden={id != *tab}>{p}</div>})
+            .map(|(p, id)| html! {
+                <div hidden={tab_id(id) != *tab}>
+                  {p}
+                </div>
+            })
             .collect::<Html>()
     };
 

@@ -73,7 +73,7 @@ pub struct Settings {
 }
 
 pub struct AirspaceSetting {
-    pub id: String,
+    pub name: String,
     pub value: String,
 }
 
@@ -236,9 +236,8 @@ impl Component for App {
                 false
             }
             Msg::AirspaceSet(setting) => {
-                log::info!("Setting {}: {}", setting.id, setting.value);
                 let value = setting.value;
-                match setting.id.as_str() {
+                match setting.name.as_str() {
                     "atz" => self.settings.airspace.atz = value,
                     "ils" => self.settings.airspace.ils = value,
                     "unlicensed" => self.settings.airspace.unlicensed = value,
