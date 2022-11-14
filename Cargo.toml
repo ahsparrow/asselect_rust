@@ -22,3 +22,12 @@ features = [
     "Document",
     "HtmlAnchorElement",
 ]
+
+[profile.release]
+panic = 'abort'
+# optimization over all codebase ( better optimization, slower build )
+codegen-units = 1
+# optimization for size ( more aggressive )
+opt-level = 'z'
+# link time optimization using using whole-program analysis
+lto = true
