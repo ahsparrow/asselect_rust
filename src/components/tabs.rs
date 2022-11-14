@@ -32,8 +32,8 @@ pub fn tabs(props: &Props) -> Html {
         props
             .tab_names
             .iter()
-            .zip(0..)
-            .map(|(t, id)| {
+            .enumerate()
+            .map(|(id, t)| {
                 html! {
                     <li class={classes!((*tab == tab_id(id)).then_some("is-active"))}>
                       <a id={tab_id(id)}>
@@ -49,8 +49,8 @@ pub fn tabs(props: &Props) -> Html {
         props
             .children
             .iter()
-            .zip(0..)
-            .map(|(p, id)| {
+            .enumerate()
+            .map(|(id, p)| {
                 html! {
                     <div hidden={tab_id(id) != *tab}>
                       {p}

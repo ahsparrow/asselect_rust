@@ -41,9 +41,9 @@ impl Component for ExtraTab {
         let category = props.categories[self.active_panel];
         let on_clear = props.on_clear.reform(move |_| category);
 
-        let iter = props.names.iter().zip(props.children.iter()).zip(0..);
+        let iter = props.names.iter().zip(props.children.iter()).enumerate();
         let panels = iter
-            .map(|((name, child), n)| {
+            .map(|(n, (name, child))| {
                 html! {
                     <div class="card mb-4">
                       <header class="card-header is-clickable"
