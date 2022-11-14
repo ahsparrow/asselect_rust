@@ -15,6 +15,7 @@ use yew::{html, Component, Context, Html};
 mod components;
 mod yaixm;
 
+// Application settings
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Airspace {
     atz: String,
@@ -27,6 +28,25 @@ pub struct Airspace {
     obstacle: String,
 }
 
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
+pub struct Options {
+    max_level: u16,
+    radio: bool,
+    north: f64,
+    south: f64,
+    format: String,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
+pub struct AppSettings {
+    airspace: Airspace,
+    options: Options,
+    loa: HashSet<String>,
+    rat: HashSet<String>,
+    wav: HashSet<String>,
+}
+
+// Application defaults
 impl Default for Airspace {
     fn default() -> Self {
         Airspace {
@@ -42,15 +62,6 @@ impl Default for Airspace {
     }
 }
 
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct Options {
-    max_level: u16,
-    radio: bool,
-    north: f64,
-    south: f64,
-    format: String,
-}
-
 impl Default for Options {
     fn default() -> Self {
         Options {
@@ -63,15 +74,7 @@ impl Default for Options {
     }
 }
 
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub struct Settings {
-    airspace: Airspace,
-    options: Options,
-    loa: HashSet<String>,
-    rat: HashSet<String>,
-    wav: HashSet<String>,
-}
-
+// Application messages
 pub struct AirspaceSetting {
     pub name: String,
     pub value: String,
@@ -90,7 +93,6 @@ pub struct ExtraSetting {
     pub checked: bool,
 }
 
-// App messages
 enum Msg {
     Save,
     AirspaceSet(AirspaceSetting),
@@ -103,7 +105,7 @@ enum Msg {
 // App component
 struct App {
     yaixm: Option<Yaixm>,
-    settings: Settings,
+    settings: AppSettings,
 }
 
 impl App {
