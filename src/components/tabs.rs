@@ -17,7 +17,11 @@ pub fn tabs(props: &Props) -> Html {
     let onclick = {
         let tab = tab.clone();
         Callback::from(move |e: MouseEvent| {
-            let id: String = e.target_unchecked_into::<HtmlElement>().id().parse().unwrap();
+            let id: String = e
+                .target_unchecked_into::<HtmlElement>()
+                .id()
+                .parse()
+                .unwrap();
             tab.set(id);
         })
     };
@@ -29,12 +33,14 @@ pub fn tabs(props: &Props) -> Html {
             .tab_names
             .iter()
             .zip(0..)
-            .map(|(t, id)| html! {
-                <li class={classes!((*tab == tab_id(id)).then_some("is-active"))}>
-                  <a id={tab_id(id)}>
-                    {t}
-                  </a>
-                </li>
+            .map(|(t, id)| {
+                html! {
+                    <li class={classes!((*tab == tab_id(id)).then_some("is-active"))}>
+                      <a id={tab_id(id)}>
+                        {t}
+                      </a>
+                    </li>
+                }
             })
             .collect()
     };
@@ -44,10 +50,12 @@ pub fn tabs(props: &Props) -> Html {
             .children
             .iter()
             .zip(0..)
-            .map(|(p, id)| html! {
-                <div hidden={tab_id(id) != *tab}>
-                  {p}
-                </div>
+            .map(|(p, id)| {
+                html! {
+                    <div hidden={tab_id(id) != *tab}>
+                      {p}
+                    </div>
+                }
             })
             .collect::<Html>()
     };

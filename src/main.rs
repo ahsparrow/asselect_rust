@@ -90,7 +90,6 @@ pub struct ExtraSetting {
     pub checked: bool,
 }
 
-
 // App messages
 enum Msg {
     Save,

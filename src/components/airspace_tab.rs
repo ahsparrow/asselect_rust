@@ -16,16 +16,14 @@ pub fn airspace_tab(props: &Props) -> Html {
         let name = element.name();
         let value = element.value();
 
-        AirspaceSetting {
-            name,
-            value,
-        }
+        AirspaceSetting { name, value }
     });
 
     let set = &props.settings;
 
     let gliding_sites = || {
-        props.gliding_sites
+        props
+            .gliding_sites
             .iter()
             .map(|name| {
                 html! {
@@ -33,7 +31,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 }
             })
             .collect::<Html>()
-        };
+    };
 
     html! {
         <div>

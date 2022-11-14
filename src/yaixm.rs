@@ -29,72 +29,72 @@ pub fn _icao_class_str(class: &IcaoClass) -> &'static str {
 #[derive(Deserialize, Eq, PartialEq, Debug)]
 #[allow(nonstandard_style)]
 pub enum IcaoType {
-    #[serde(rename="ATZ")]
+    #[serde(rename = "ATZ")]
     Atz,
-    #[serde(rename="AWY")]
+    #[serde(rename = "AWY")]
     Awy,
-    #[serde(rename="CTA")]
+    #[serde(rename = "CTA")]
     Cta,
-    #[serde(rename="CTR")]
+    #[serde(rename = "CTR")]
     Ctr,
     D,
-    #[serde(rename="D_OTHER")]
+    #[serde(rename = "D_OTHER")]
     DOther,
-    #[serde(rename="OTHER")]
+    #[serde(rename = "OTHER")]
     Other,
     P,
     R,
-    #[serde(rename="TMA")]
+    #[serde(rename = "TMA")]
     Tma,
 }
 
 #[derive(Deserialize, Eq, PartialEq, Debug)]
 pub enum LocalType {
-    #[serde(rename="DZ")]
+    #[serde(rename = "DZ")]
     Dz,
-    #[serde(rename="GLIDER")]
+    #[serde(rename = "GLIDER")]
     Glider,
-    #[serde(rename="GVS")]
+    #[serde(rename = "GVS")]
     Gvs,
-    #[serde(rename="HIRTA")]
+    #[serde(rename = "HIRTA")]
     Hirta,
-    #[serde(rename="ILS")]
+    #[serde(rename = "ILS")]
     Ils,
-    #[serde(rename="LASER")]
+    #[serde(rename = "LASER")]
     Laser,
-    #[serde(rename="MATZ")]
+    #[serde(rename = "MATZ")]
     Matz,
-    #[serde(rename="NOATZ")]
+    #[serde(rename = "NOATZ")]
     NoAtz,
-    #[serde(rename="RAT")]
+    #[serde(rename = "RAT")]
     Rat,
-    #[serde(rename="RMZ")]
+    #[serde(rename = "RMZ")]
     Rmz,
-    #[serde(rename="UL")]
+    #[serde(rename = "UL")]
     Ul,
-    #[serde(rename="TMZ")]
+    #[serde(rename = "TMZ")]
     Tmz,
 }
 
 #[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
 pub enum Rule {
-    #[serde(rename="INTENSE")]
+    #[serde(rename = "INTENSE")]
     Intense,
-    #[serde(rename="LOA")]
+    #[serde(rename = "LOA")]
     Loa,
-    #[serde(rename="NOSSR")]
+    #[serde(rename = "NOSSR")]
     NoSsr,
-    #[serde(rename="NOTAM")]
+    #[serde(rename = "NOTAM")]
     Notam,
-    #[serde(rename="RAZ")]
+    #[serde(rename = "RAZ")]
     Raz,
-    #[serde(rename="RMZ")]
+    #[serde(rename = "RMZ")]
     Rmz,
-    #[serde(rename="SI")]
+    #[serde(rename = "SI")]
     Si,
-    #[serde(rename="TRA")]
+    #[serde(rename = "TRA")]
     Tra,
-    #[serde(rename="TMZ")]
+    #[serde(rename = "TMZ")]
     Tmz,
 }
 
@@ -114,11 +114,11 @@ pub struct Arc {
 
 #[derive(Deserialize, Debug)]
 pub enum Boundary {
-    #[serde(rename="circle")]
+    #[serde(rename = "circle")]
     Circle(Circle),
-    #[serde(rename="arc")]
+    #[serde(rename = "arc")]
     Arc(Arc),
-    #[serde(rename="line")]
+    #[serde(rename = "line")]
     Line(Vec<String>),
 }
 
@@ -126,7 +126,7 @@ pub enum Boundary {
 pub struct Volume {
     pub lower: String,
     pub upper: String,
-    #[serde(rename="class")]
+    #[serde(rename = "class")]
     pub icao_class: Option<IcaoClass>,
     pub name: Option<String>,
     pub rules: Option<Vec<Rule>>,
@@ -137,11 +137,11 @@ pub struct Volume {
 #[derive(Deserialize, Debug)]
 pub struct Feature {
     pub name: String,
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     pub icao_type: IcaoType,
-    #[serde(rename="localtype")]
+    #[serde(rename = "localtype")]
     pub local_type: Option<LocalType>,
-    #[serde(rename="class")]
+    #[serde(rename = "class")]
     pub icao_class: Option<IcaoClass>,
     pub rules: Option<Vec<Rule>>,
     pub id: Option<String>,

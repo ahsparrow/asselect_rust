@@ -1,11 +1,11 @@
-use crate::{Options, AirspaceSetting};
+use crate::{AirspaceSetting, Options};
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, Callback, Event, Properties, TargetCast};
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
     pub options: Options,
-    pub callback: Callback<AirspaceSetting>
+    pub callback: Callback<AirspaceSetting>,
 }
 
 #[function_component(OptionsTab)]
@@ -14,10 +14,7 @@ pub fn options_tab(props: &Props) -> Html {
         let name = e.target_unchecked_into::<HtmlInputElement>().name();
         let value = e.target_unchecked_into::<HtmlInputElement>().value();
 
-        AirspaceSetting {
-            name,
-            value,
-        }
+        AirspaceSetting { name, value }
     });
 
     let opts = &props.options;
