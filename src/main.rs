@@ -77,7 +77,7 @@ pub struct AirspaceSetting {
     pub value: String,
 }
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq)]
 pub enum ExtraCategory {
     Rat,
     Loa,

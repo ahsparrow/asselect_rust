@@ -38,8 +38,8 @@ impl Component for ExtraTab {
         let link = ctx.link();
         let props = ctx.props();
 
-        let category = props.categories[self.active_panel as usize].clone();
-        let on_clear = props.on_clear.reform(move |_| category.clone());
+        let category = props.categories[self.active_panel as usize];
+        let on_clear = props.on_clear.reform(move |_| category);
 
         let iter = props.names.iter().zip(props.children.iter()).zip(0..);
         let panels = iter

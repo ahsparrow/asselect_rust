@@ -13,7 +13,7 @@ pub struct Props {
 
 #[function_component(ExtraPanel)]
 pub fn extra_panel(props: &Props) -> Html {
-    let category = props.category.clone();
+    let category = props.category;
     let onchange = props.callback.reform(move |e: Event| {
         let name = e.target_unchecked_into::<HtmlInputElement>().name();
         let checked = e.target_unchecked_into::<HtmlInputElement>().checked();
