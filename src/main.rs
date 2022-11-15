@@ -4,75 +4,14 @@ use components::{AirspaceTab, ExtraPanel, ExtraTab, NotamTab, OptionsTab, Tabs};
 use gloo_file::{Blob, ObjectUrl};
 use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
-use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
 use wasm_bindgen::JsCast;
-use yaixm::openair::openair;
+use yaixm::convert::{openair, Settings};
 use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
 use yaixm::Yaixm;
 use yew::{html, Component, Context, Html};
 
 mod components;
 mod yaixm;
-
-// Application settings
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Airspace {
-    atz: String,
-    ils: String,
-    unlicensed: String,
-    microlight: String,
-    gliding: String,
-    home: String,
-    hirta_gvs: String,
-    obstacle: String,
-}
-
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct Options {
-    max_level: u16,
-    radio: bool,
-    north: f64,
-    south: f64,
-    format: String,
-}
-
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub struct AppSettings {
-    airspace: Airspace,
-    options: Options,
-    loa: HashSet<String>,
-    rat: HashSet<String>,
-    wav: HashSet<String>,
-}
-
-// Application defaults
-impl Default for Airspace {
-    fn default() -> Self {
-        Airspace {
-            atz: "ctr".to_string(),
-            ils: "atz".to_string(),
-            unlicensed: "exclude".to_string(),
-            microlight: "exclude".to_string(),
-            gliding: "exclude".to_string(),
-            home: "None".to_string(),
-            hirta_gvs: "exclude".to_string(),
-            obstacle: "exclude".to_string(),
-        }
-    }
-}
-
-impl Default for Options {
-    fn default() -> Self {
-        Options {
-            max_level: 600,
-            radio: false,
-            north: 59.0,
-            south: 49.0,
-            format: "openair".to_string(),
-        }
-    }
-}
 
 // Application messages
 pub struct AirspaceSetting {
@@ -105,7 +44,7 @@ enum Msg {
 // App component
 struct App {
     yaixm: Option<Yaixm>,
-    settings: AppSettings,
+    settings: Settings,
 }
 
 impl App {
@@ -193,7 +132,7 @@ impl App {
     fn save(&self) {
         LocalStorage::set("settings", self.settings.clone()).unwrap();
 
-        let oa = openair(self.yaixm.as_ref().unwrap()).join("\n");
+        let oa = openair(self.yaixm.as_ref().unwrap(), &self.settings).join("\n");
         let blob = Blob::new(oa.as_str());
         let object_url = ObjectUrl::from(blob);
 
