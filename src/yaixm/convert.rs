@@ -1,8 +1,17 @@
+use crate::yaixm::{
+    local_type_str, rule_str, Feature, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
+};
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
-use crate::yaixm;
+use std::collections::{HashMap, HashSet};
 
 // Settings
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum Format {
+    OpenAir,
+    RatOnly,
+    Competition,
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Airspace {
     pub atz: String,
@@ -21,7 +30,7 @@ pub struct Options {
     pub radio: bool,
     pub north: f64,
     pub south: f64,
-    pub format: String,
+    pub format: Format,
 }
 
 #[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
@@ -56,24 +65,113 @@ impl Default for Options {
             radio: false,
             north: 59.0,
             south: 49.0,
-            format: "openair".to_string(),
+            format: Format::OpenAir,
         }
     }
 }
 
-fn do_name(feature: &yaixm::Feature, _vol: &yaixm::Volume, _settings: &Settings) -> String {
-    format!("AN {}", feature.name)
+fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> String {
+    let name = if let Some(name) = &vol.name {
+        name.clone()
+    } else {
+        let mut name = feature.name.clone();
+
+        let mut rules = feature.rules.clone().unwrap_or_default();
+        rules.extend(vol.rules.clone().unwrap_or_default());
+
+        // Base type name
+        if let Some(LocalType::NoAtz) | Some(LocalType::Ul) = feature.local_type {
+            name += " A/F"
+        } else if let Some(LocalType::Matz)
+        | Some(LocalType::Dz)
+        | Some(LocalType::Gvs)
+        | Some(LocalType::Hirta)
+        | Some(LocalType::Ils)
+        | Some(LocalType::Laser) = feature.local_type
+        {
+            name.push(' ');
+            name += local_type_str(feature.local_type.as_ref().unwrap());
+        } else if feature.icao_type == IcaoType::Atz {
+            name += " ATZ";
+        } else if rules.contains(&Rule::Raz) {
+            name += " RAZ";
+        }
+
+        // Optional sequence number
+        if settings.options.format == Format::Competition && feature.geometry.len() > 1 {
+            name.push('-');
+            if let Some(seqno) = vol.seqno {
+                name += &seqno.to_string();
+
+                if let Some(subseq) = vol.subseq {
+                    name.push(subseq);
+                }
+            } else {
+                let x = (b'A'..=b'Z').map(|c| c as char).nth(n);
+                name.push(x.unwrap());
+            }
+        }
+
+        // SI & NOTAM qualifiers
+        let mut qualifiers = rules
+            .iter()
+            .filter(|&x| x == &Rule::Si || x == &Rule::Notam)
+            .map(rule_str)
+            .collect::<Vec<&str>>();
+
+        if !qualifiers.is_empty() {
+            qualifiers.sort();
+            qualifiers.reverse();
+            name.push(' ');
+            name += &qualifiers.join("/");
+        }
+
+        // Optionally append frequency
+        if settings.options.radio {
+            if let Some(freq) = vol.frequency {
+                name += format!(" {:.3}", freq).as_ref();
+            }
+        };
+
+        name
+    };
+
+    format!("AN {}", name)
 }
 
-pub fn openair(yaixm: &yaixm::Yaixm, settings: &Settings) -> Vec<String> {
+fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
+    // Create frequency map
+    let mut freqs = HashMap::new();
+    for service in services {
+        for id in &service.controls {
+            freqs.insert(id, service.frequency);
+        }
+    }
+
+    // Add frequency properties
+    for feature in airspace {
+        for volume in &mut feature.geometry {
+            let id = volume.id.as_ref().or(feature.id.as_ref());
+            if let Some(id) = id {
+                if let Some(f) = freqs.get(&id) {
+                    volume.frequency = Some(*f);
+                }
+            }
+        }
+    }
+}
+
+pub fn openair(yaixm: &Yaixm, settings: &Settings) -> Vec<String> {
     let mut output: Vec<String> = vec![];
-    let airspace = &yaixm.airspace;
+    let mut airspace = yaixm.airspace.clone();
+
+    merge_services(&mut airspace, &yaixm.service);
 
     for feature in airspace {
-        for vol in &feature.geometry {
+        for (n, vol) in feature.geometry.iter().enumerate() {
             output.push("*".to_string());
             //output.push(do_type(feature, vol, settings));
-            output.push(do_name(feature, vol, settings));
+            output.push(do_name(&feature, vol, n, settings));
         }
     }
 

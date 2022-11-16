@@ -5,7 +5,7 @@ use gloo_file::{Blob, ObjectUrl};
 use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
 use wasm_bindgen::JsCast;
-use yaixm::convert::{openair, Settings};
+use yaixm::convert::{openair, Format, Settings};
 use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
 use yaixm::Yaixm;
 use yew::{html, Component, Context, Html};
@@ -191,8 +191,11 @@ impl Component for App {
                     "radio" => self.settings.options.radio = value == "yes",
                     "north" => self.settings.options.north = value.parse::<f64>().unwrap(),
                     "south" => self.settings.options.south = value.parse::<f64>().unwrap(),
-                    "format" => self.settings.options.format = value,
-
+                    "format" => self.settings.options.format = match value.as_ref() {
+                        "ratonly" => Format::RatOnly,
+                        "competition" => Format::Competition,
+                        _ => Format::OpenAir,
+                    },
                     _ => (),
                 }
                 true

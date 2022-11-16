@@ -1,9 +1,10 @@
 use serde::Deserialize;
+use std::collections::HashSet;
 
 pub mod convert;
 pub mod util;
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
 pub enum IcaoClass {
     A,
     B,
@@ -26,7 +27,7 @@ pub fn _icao_class_str(class: &IcaoClass) -> &'static str {
     }
 }
 
-#[derive(Deserialize, Eq, PartialEq, Debug)]
+#[derive(Clone, Deserialize, Eq, PartialEq, Debug)]
 #[allow(nonstandard_style)]
 pub enum IcaoType {
     #[serde(rename = "ATZ")]
@@ -48,7 +49,7 @@ pub enum IcaoType {
     Tma,
 }
 
-#[derive(Deserialize, Eq, PartialEq, Debug)]
+#[derive(Clone, Deserialize, Eq, PartialEq, Debug)]
 pub enum LocalType {
     #[serde(rename = "DZ")]
     Dz,
@@ -76,7 +77,24 @@ pub enum LocalType {
     Tmz,
 }
 
-#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
+pub fn local_type_str(class: &LocalType) -> &'static str {
+    match class {
+        LocalType::Dz => "DZ",
+        LocalType::Glider => "GLIDER",
+        LocalType::Gvs => "GVS",
+        LocalType::Hirta => "HIRTA",
+        LocalType::Ils => "ILS",
+        LocalType::Laser => "LASER",
+        LocalType::Matz => "MATZ",
+        LocalType::NoAtz => "NOATZ",
+        LocalType::Rat => "RAT",
+        LocalType::Rmz => "RMZ",
+        LocalType::Ul => "UL",
+        LocalType::Tmz => "TMZ",
+    }
+}
+
+#[derive(Clone, Deserialize, Debug, Eq, Hash, PartialEq)]
 pub enum Rule {
     #[serde(rename = "INTENSE")]
     Intense,
@@ -98,13 +116,27 @@ pub enum Rule {
     Tmz,
 }
 
-#[derive(Deserialize, Debug)]
+pub fn rule_str(rule: &Rule) -> &'static str {
+    match rule {
+        Rule::Intense => "INTENSE",
+        Rule::Loa => "LOA",
+        Rule::NoSsr => "NOSSR",
+        Rule::Notam => "NOTAM",
+        Rule::Raz => "RAZ",
+        Rule::Rmz => "RMZ",
+        Rule::Si => "SI",
+        Rule::Tra => "TRA",
+        Rule::Tmz => "TMZ",
+    }
+}
+
+#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
 pub struct Circle {
     pub centre: String,
     pub radius: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
 pub struct Arc {
     pub centre: String,
     pub dir: String,
@@ -112,7 +144,7 @@ pub struct Arc {
     pub to: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
 pub enum Boundary {
     #[serde(rename = "circle")]
     Circle(Circle),
@@ -122,20 +154,24 @@ pub enum Boundary {
     Line(Vec<String>),
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
 pub struct Volume {
+    pub id: Option<String>,
+    pub name: Option<String>,
     pub lower: String,
     pub upper: String,
     #[serde(rename = "class")]
     pub icao_class: Option<IcaoClass>,
-    pub name: Option<String>,
-    pub rules: Option<Vec<Rule>>,
+    pub rules: Option<HashSet<Rule>>,
     pub seqno: Option<u8>,
+    pub subseq: Option<char>,
+    pub frequency: Option<f64>,
     pub boundary: Vec<Boundary>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct Feature {
+    pub id: Option<String>,
     pub name: String,
     #[serde(rename = "type")]
     pub icao_type: IcaoType,
@@ -143,8 +179,7 @@ pub struct Feature {
     pub local_type: Option<LocalType>,
     #[serde(rename = "class")]
     pub icao_class: Option<IcaoClass>,
-    pub rules: Option<Vec<Rule>>,
-    pub id: Option<String>,
+    pub rules: Option<HashSet<Rule>>,
     pub geometry: Vec<Volume>,
 }
 

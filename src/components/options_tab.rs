@@ -1,5 +1,5 @@
 use crate::AirspaceSetting;
-use crate::yaixm::convert::Options;
+use crate::yaixm::convert::{Format, Options};
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, Callback, Event, Properties, TargetCast};
 
@@ -97,9 +97,9 @@ pub fn options_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="format" onchange={onchange.clone()}>
-                      <option value="openair" selected={opts.format == "openair"}>{"OpenAir"}</option>
-                      <option value="ratonly" selected={opts.format == "ratonly"}>{"RA(T) only"}</option>
-                      <option value="competition" selected={opts.format == "competition"}>{"Competition"}</option>
+                      <option value="openair" selected={opts.format == Format::OpenAir}>{"OpenAir"}</option>
+                      <option value="ratonly" selected={opts.format == Format::RatOnly}>{"RA(T) only"}</option>
+                      <option value="competition" selected={opts.format == Format::Competition}>{"Competition"}</option>
                     </select>
                   </div>
                 </div>
