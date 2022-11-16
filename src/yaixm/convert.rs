@@ -1,6 +1,7 @@
 use crate::yaixm::{
     local_type_str, rule_str, Feature, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
 };
+use crate::yaixm::util::norm_level;
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
@@ -39,7 +40,7 @@ pub struct Settings {
     pub options: Options,
     pub loa: HashSet<String>,
     pub rat: HashSet<String>,
-    pub wav: HashSet<String>,
+    pub wave: HashSet<String>,
 }
 
 // Setting defaults
@@ -70,14 +71,61 @@ impl Default for Options {
     }
 }
 
+fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
+    let rules = feature
+        .rules
+        .iter()
+        .chain(vol.rules.iter())
+        .flatten()
+        .collect::<HashSet<&Rule>>();
+
+    if feature.local_type == Some(LocalType::NoAtz) && &settings.airspace.unlicensed == "exclude" {
+        // Unlicensed airfield
+        false
+    } else if feature.local_type == Some(LocalType::Ul)
+        && &settings.airspace.microlight == "exclude"
+    {
+        // Microlight airfield
+        false
+    } else if let Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) =
+        // HIRTA, etc
+        feature.local_type
+    {
+        // Obstacle
+        &settings.airspace.obstacle != "exclude"
+    } else if feature.icao_type == IcaoType::Other
+        && feature.local_type == Some(LocalType::Glider)
+        && !rules.contains(&Rule::Loa)
+        && (&settings.airspace.gliding == "exclude" || settings.airspace.home == feature.name)
+    {
+        // Gliding airfield
+        false
+    } else if feature.icao_type == IcaoType::DOther
+        && feature.local_type == Some(LocalType::Glider)
+        && !(settings.wave.contains(&feature.name) || rules.contains(&Rule::Loa))
+    {
+        // Wave box
+        false
+    } else if norm_level(&vol.lower) >= settings.options.max_level {
+        // Maximum level
+        false
+    } else {
+        true
+    }
+}
+
 fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> String {
     let name = if let Some(name) = &vol.name {
         name.clone()
     } else {
         let mut name = feature.name.clone();
 
-        let mut rules = feature.rules.clone().unwrap_or_default();
-        rules.extend(vol.rules.clone().unwrap_or_default());
+        let rules = feature
+            .rules
+            .iter()
+            .chain(vol.rules.iter())
+            .flatten()
+            .collect::<HashSet<&Rule>>();
 
         // Base type name
         if let Some(LocalType::NoAtz) | Some(LocalType::Ul) = feature.local_type {
@@ -114,8 +162,8 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
 
         // SI & NOTAM qualifiers
         let mut qualifiers = rules
-            .iter()
-            .filter(|&x| x == &Rule::Si || x == &Rule::Notam)
+            .into_iter()
+            .filter(|&x| *x == Rule::Si || *x == Rule::Notam)
             .map(rule_str)
             .collect::<Vec<&str>>();
 
@@ -169,9 +217,11 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> Vec<String> {
 
     for feature in airspace {
         for (n, vol) in feature.geometry.iter().enumerate() {
-            output.push("*".to_string());
-            //output.push(do_type(feature, vol, settings));
-            output.push(do_name(&feature, vol, n, settings));
+            if airfilter(&feature, &vol, settings) {
+                output.push("*".to_string());
+                //output.push(do_type(feature, vol, settings));
+                output.push(do_name(&feature, vol, n, settings));
+            }
         }
     }
 

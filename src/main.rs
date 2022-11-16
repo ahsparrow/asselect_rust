@@ -77,7 +77,7 @@ impl App {
         let loa_selected = self.settings.loa.clone();
         let loa_names = loa_names(yaixm);
 
-        let wav_selected = self.settings.wav.clone();
+        let wav_selected = self.settings.wave.clone();
         let mut wav_names = wav_names(yaixm);
         wav_names.sort();
 
@@ -204,7 +204,7 @@ impl Component for App {
                 match category {
                     ExtraCategory::Rat => self.settings.rat.clear(),
                     ExtraCategory::Loa => self.settings.loa.clear(),
-                    ExtraCategory::Wave => self.settings.wav.clear(),
+                    ExtraCategory::Wave => self.settings.wave.clear(),
                 }
                 true
             }
@@ -212,7 +212,7 @@ impl Component for App {
                 let set = match setting.category {
                     ExtraCategory::Rat => &mut self.settings.rat,
                     ExtraCategory::Loa => &mut self.settings.loa,
-                    ExtraCategory::Wave => &mut self.settings.wav,
+                    ExtraCategory::Wave => &mut self.settings.wave,
                 };
 
                 if setting.checked {

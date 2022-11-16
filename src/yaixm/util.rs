@@ -40,3 +40,13 @@ pub fn gliding_sites(yaixm: &Yaixm) -> Vec<String> {
         .map(|x| x.name.clone())
         .collect::<Vec<String>>()
 }
+
+pub fn norm_level(value: &str) -> u16 {
+    if value.starts_with("FL") {
+        value[2..].parse().unwrap()
+    } else if value.ends_with(" ft") {
+        value.split(' ').next().unwrap().parse::<u16>().unwrap() / 100
+    } else {
+        0
+    }
+}
