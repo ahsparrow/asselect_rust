@@ -50,3 +50,13 @@ pub fn norm_level(value: &str) -> u16 {
         0
     }
 }
+
+pub fn format_level(level: &str) -> String {
+    if let Some(alt) = level.strip_suffix(" ft") {
+        // Altitude
+        alt.to_string() + "ALT"
+    } else {
+        // Flight level or SFC
+        level.to_string()
+    }
+}

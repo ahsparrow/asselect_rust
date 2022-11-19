@@ -1,4 +1,4 @@
-use crate::yaixm::util::norm_level;
+use crate::yaixm::util::{format_level, norm_level};
 use crate::yaixm::{
     icao_class_str, local_type_str, rule_str, Feature, IcaoType, LocalType, Rule, Service, Volume,
     Yaixm,
@@ -283,6 +283,11 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
     format!("AC {}", openair_type)
 }
 
+fn do_levels(volume: &Volume) -> Vec<String> {
+    vec!("AL ".to_string() + &format_level(&volume.lower),
+         "AH ".to_string() + &format_level(&volume.upper))
+}
+
 fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
     // Create frequency map
     let mut freqs = HashMap::new();
@@ -317,6 +322,7 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> Vec<String> {
                 output.push("*".to_string());
                 output.push(do_type(&feature, vol, settings));
                 output.push(do_name(&feature, vol, n, settings));
+                output.append(&mut do_levels(vol));
             }
         }
     }
