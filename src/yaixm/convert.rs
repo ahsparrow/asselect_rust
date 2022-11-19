@@ -1,7 +1,8 @@
-use crate::yaixm::{
-    local_type_str, icao_class_str, rule_str, Feature, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
-};
 use crate::yaixm::util::norm_level;
+use crate::yaixm::{
+    icao_class_str, local_type_str, rule_str, Feature, IcaoType, LocalType, Rule, Service, Volume,
+    Yaixm,
+};
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 
@@ -72,46 +73,27 @@ impl Default for Options {
 }
 
 fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
-    let rules = feature
-        .rules
-        .iter()
-        .chain(vol.rules.iter())
-        .flatten()
-        .collect::<HashSet<&Rule>>();
+    let exclude = match feature.local_type {
+        // No-ATZ
+        Some(LocalType::NoAtz) => &settings.airspace.unlicensed == "exclude",
+        // Unlicensed
+        Some(LocalType::Ul) => &settings.airspace.microlight == "exclude",
+        // Wave Box
+        Some(LocalType::Glider) if feature.icao_type == IcaoType::DOther => {
+            !settings.wave.contains(&feature.name)
+        }
+        // Gliding Site
+        Some(LocalType::Glider) => {
+            settings.airspace.gliding == "exclude" || settings.airspace.home == feature.name
+        }
+        // HIRTA/GVS/Laser
+        Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) => {
+            settings.airspace.hirta_gvs == "exclude"
+        }
+        _ => false,
+    };
 
-    if feature.local_type == Some(LocalType::NoAtz) && &settings.airspace.unlicensed == "exclude" {
-        // Unlicensed airfield
-        false
-    } else if feature.local_type == Some(LocalType::Ul)
-        && &settings.airspace.microlight == "exclude"
-    {
-        // Microlight airfield
-        false
-    } else if let Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) =
-        // HIRTA, etc
-        feature.local_type
-    {
-        // Obstacle
-        &settings.airspace.obstacle != "exclude"
-    } else if feature.icao_type == IcaoType::Other
-        && feature.local_type == Some(LocalType::Glider)
-        && !rules.contains(&Rule::Loa)
-        && (&settings.airspace.gliding == "exclude" || settings.airspace.home == feature.name)
-    {
-        // Gliding airfield
-        false
-    } else if feature.icao_type == IcaoType::DOther
-        && feature.local_type == Some(LocalType::Glider)
-        && !(settings.wave.contains(&feature.name) || rules.contains(&Rule::Loa))
-    {
-        // Wave box
-        false
-    } else if norm_level(&vol.lower) >= settings.options.max_level {
-        // Maximum level
-        false
-    } else {
-        true
-    }
+    !(exclude || (norm_level(&vol.lower) >= settings.options.max_level))
 }
 
 fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> String {
