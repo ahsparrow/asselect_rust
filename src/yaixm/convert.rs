@@ -1,5 +1,5 @@
 use crate::yaixm::{
-    local_type_str, rule_str, Feature, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
+    local_type_str, icao_class_str, rule_str, Feature, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
 };
 use crate::yaixm::util::norm_level;
 use serde::{Deserialize, Serialize};
@@ -187,6 +187,120 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
     format!("AN {}", name)
 }
 
+fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
+    let atz = match settings.airspace.atz.as_str() {
+        "classd" => "D",
+        _ => "CTR",
+    };
+
+    let ils = match settings.airspace.ils.as_str() {
+        "atz" => atz,
+        "classf" => "F",
+        _ => "G",
+    };
+
+    let noatz = match settings.airspace.unlicensed.as_str() {
+        "classf" => "F",
+        _ => "G",
+    };
+
+    let ul = match settings.airspace.microlight.as_str() {
+        "classf" => "F",
+        _ => "G",
+    };
+
+    let glider = match settings.airspace.gliding.as_str() {
+        "classf" => "F",
+        "classg" => "G",
+        _ => "W",
+    };
+
+    let hirta_gvs = match settings.airspace.hirta_gvs.as_str() {
+        "restricted" => "R",
+        _ => "Q",
+    };
+
+    let rules = feature
+        .rules
+        .iter()
+        .chain(vol.rules.iter())
+        .flatten()
+        .collect::<HashSet<&Rule>>();
+
+    let comp = settings.options.format == Format::Competition;
+
+    let openair_type = if rules.contains(&Rule::Notam) {
+        // NOTAM activated airspace
+        "G"
+    } else {
+        match feature.icao_type {
+            IcaoType::Atz => atz,
+            IcaoType::D => {
+                if comp && rules.contains(&Rule::Si) {
+                    // Danger area with SI
+                    "P"
+                } else {
+                    // Danger area without SI
+                    "Q"
+                }
+            }
+            IcaoType::DOther => {
+                if comp
+                    && feature.local_type == Some(LocalType::Dz)
+                    && rules.contains(&Rule::Intense)
+                {
+                    // Intense drop zone - competition
+                    "P"
+                } else {
+                    match feature.local_type {
+                        Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) => {
+                            hirta_gvs
+                        }
+                        Some(LocalType::Glider) => "W",
+                        _ => "Q",
+                    }
+                }
+            }
+            IcaoType::Other => match feature.local_type {
+                Some(LocalType::Glider) => {
+                    if rules.contains(&Rule::Loa) {
+                        "W"
+                    } else {
+                        glider
+                    }
+                }
+                Some(LocalType::Ils) => ils,
+                Some(LocalType::Matz) => "MATZ",
+                Some(LocalType::NoAtz) => noatz,
+                Some(LocalType::Rat) => "P",
+                Some(LocalType::Tmz) => "TMZ",
+                Some(LocalType::Ul) => ul,
+                Some(LocalType::Rmz) => "RMZ",
+                _ => "OTHER",
+            },
+            IcaoType::P => "P",
+            IcaoType::R => "R",
+            _ => {
+                if rules.contains(&Rule::Tmz) {
+                    "TMZ"
+                } else if rules.contains(&Rule::Rmz) {
+                    "RMZ"
+                } else {
+                    match &vol.icao_class {
+                        Some(vc) => icao_class_str(vc),
+                        None => match &feature.icao_class {
+                            Some(fc) => icao_class_str(fc),
+                            None => "OTHER",
+                        },
+                    }
+                }
+            }
+        }
+    };
+
+    format!("AC {}", openair_type)
+}
+
 fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
     // Create frequency map
     let mut freqs = HashMap::new();
@@ -217,9 +331,9 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> Vec<String> {
 
     for feature in airspace {
         for (n, vol) in feature.geometry.iter().enumerate() {
-            if airfilter(&feature, &vol, settings) {
+            if airfilter(&feature, vol, settings) {
                 output.push("*".to_string());
-                //output.push(do_type(feature, vol, settings));
+                output.push(do_type(&feature, vol, settings));
                 output.push(do_name(&feature, vol, n, settings));
             }
         }

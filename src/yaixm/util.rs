@@ -42,8 +42,8 @@ pub fn gliding_sites(yaixm: &Yaixm) -> Vec<String> {
 }
 
 pub fn norm_level(value: &str) -> u16 {
-    if value.starts_with("FL") {
-        value[2..].parse().unwrap()
+    if let Some(fl) = value.strip_prefix("FL") {
+        fl.parse().unwrap()
     } else if value.ends_with(" ft") {
         value.split(' ').next().unwrap().parse::<u16>().unwrap() / 100
     } else {
