@@ -310,20 +310,40 @@ fn do_circle(circle: &Circle) -> String {
     )
 }
 
-fn do_arc(arc: &Arc) -> String {
-    "".to_string()
+fn do_arc(arc: &Arc, from: &str) -> String {
+    let dir = if arc.dir == "cw" {
+        "+"
+    } else {
+        "-"
+    };
+
+    format!(
+        "V D={}\nV X={}\nDB {}, {}\n",
+        dir,
+        format_latlon(&arc.centre),
+        format_latlon(from),
+        format_latlon(&arc.to)
+    )
 }
 
 fn do_boundary(boundary: &[Boundary]) -> String {
-    boundary
-        .iter()
-        .map(|segment| match segment {
-            Boundary::Line(line) => do_line(line),
-            Boundary::Circle(circle) => do_circle(circle),
-            Boundary::Arc(arc) => do_arc(arc),
-        })
-        .collect::<Vec<String>>()
-        .join("")
+    let mut out = String::new();
+    let mut prev = "";
+
+    for segment in boundary {
+        match segment {
+            Boundary::Line(line) => {
+                out.push_str(&do_line(line));
+                prev = line.last().unwrap();
+            }
+            Boundary::Arc(arc) => {
+                out.push_str(&do_arc(arc, prev));
+                prev = &arc.to;
+            }
+            Boundary::Circle(circle) => out.push_str(&do_circle(circle)),
+        }
+    }
+    out
 }
 
 fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
