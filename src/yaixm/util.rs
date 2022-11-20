@@ -60,3 +60,8 @@ pub fn format_level(level: &str) -> String {
         level.to_string()
     }
 }
+
+pub fn format_latlon(latlon: &str) -> String {
+    format!("{}:{}:{} {} {}:{}:{} {}", &latlon[..2], &latlon[2..4], &latlon[4..6], &latlon[6..7], &latlon[7..10], &latlon[10..12], &latlon[12..14], &latlon[15..16])
+}
+

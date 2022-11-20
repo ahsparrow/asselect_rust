@@ -1,7 +1,7 @@
-use crate::yaixm::util::{format_level, norm_level};
+use crate::yaixm::util::{format_latlon, format_level, norm_level};
 use crate::yaixm::{
-    icao_class_str, local_type_str, rule_str, Feature, IcaoType, LocalType, Rule, Service, Volume,
-    Yaixm,
+    icao_class_str, local_type_str, rule_str, Arc, Boundary, Circle, Feature, IcaoType, LocalType,
+    Rule, Service, Volume, Yaixm,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
@@ -166,7 +166,7 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
         name
     };
 
-    format!("AN {}", name)
+    format!("AN {}\n", name)
 }
 
 fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
@@ -280,12 +280,46 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
         }
     };
 
-    format!("AC {}", openair_type)
+    format!("AC {}\n", openair_type)
 }
 
-fn do_levels(volume: &Volume) -> Vec<String> {
-    vec!("AL ".to_string() + &format_level(&volume.lower),
-         "AH ".to_string() + &format_level(&volume.upper))
+fn do_levels(volume: &Volume) -> String {
+    format!(
+        "AL {}\nAH {}\n",
+        &format_level(&volume.lower),
+        &format_level(&volume.upper)
+    )
+}
+
+fn do_point(point: &str) -> String {
+    format!("DP {}\n", format_latlon(point))
+}
+
+fn do_line(line: &[String]) -> String {
+    line.iter()
+        .map(|x| do_point(x))
+        .collect::<Vec<String>>()
+        .join("")
+}
+
+fn do_circle(circle: &Circle) -> String {
+    "".to_string()
+}
+
+fn do_arc(arc: &Arc) -> String {
+    "".to_string()
+}
+
+fn do_boundary(boundary: &[Boundary]) -> String {
+    boundary
+        .iter()
+        .map(|segment| match segment {
+            Boundary::Line(line) => do_line(line),
+            Boundary::Circle(circle) => do_circle(circle),
+            Boundary::Arc(arc) => do_arc(arc),
+        })
+        .collect::<Vec<String>>()
+        .join("")
 }
 
 fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
@@ -310,8 +344,8 @@ fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
     }
 }
 
-pub fn openair(yaixm: &Yaixm, settings: &Settings) -> Vec<String> {
-    let mut output: Vec<String> = vec![];
+pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
+    let mut output = String::new();
     let mut airspace = yaixm.airspace.clone();
 
     merge_services(&mut airspace, &yaixm.service);
@@ -319,13 +353,13 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> Vec<String> {
     for feature in airspace {
         for (n, vol) in feature.geometry.iter().enumerate() {
             if airfilter(&feature, vol, settings) {
-                output.push("*".to_string());
-                output.push(do_type(&feature, vol, settings));
-                output.push(do_name(&feature, vol, n, settings));
-                output.append(&mut do_levels(vol));
+                output.push_str("*\n");
+                output.push_str(&do_type(&feature, vol, settings));
+                output.push_str(&do_name(&feature, vol, n, settings));
+                output.push_str(&do_levels(vol));
+                output.push_str(&do_boundary(&vol.boundary));
             }
         }
     }
-
     output
 }
