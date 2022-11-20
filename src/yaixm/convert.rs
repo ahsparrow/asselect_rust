@@ -1,4 +1,4 @@
-use crate::yaixm::util::{format_latlon, format_level, norm_level};
+use crate::yaixm::util::{format_distance, format_latlon, format_level, norm_level};
 use crate::yaixm::{
     icao_class_str, local_type_str, rule_str, Arc, Boundary, Circle, Feature, IcaoType, LocalType,
     Rule, Service, Volume, Yaixm,
@@ -303,7 +303,11 @@ fn do_line(line: &[String]) -> String {
 }
 
 fn do_circle(circle: &Circle) -> String {
-    "".to_string()
+    format!(
+        "V X={}\nDC {}\n",
+        format_latlon(&circle.centre),
+        format_distance(&circle.radius)
+    )
 }
 
 fn do_arc(arc: &Arc) -> String {

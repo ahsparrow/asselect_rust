@@ -65,3 +65,15 @@ pub fn format_latlon(latlon: &str) -> String {
     format!("{}:{}:{} {} {}:{}:{} {}", &latlon[..2], &latlon[2..4], &latlon[4..6], &latlon[6..7], &latlon[7..10], &latlon[10..12], &latlon[12..14], &latlon[15..16])
 }
 
+pub fn format_distance(distance: &str) -> String {
+    match distance.split_once(' ') {
+        Some((dist, unit)) => {
+            if unit == "km" {
+                format!("{:.3}", dist.parse::<f32>().unwrap() / 1.852)
+            } else {
+                dist.to_string()
+            }
+        }
+        _ => "".to_string(),
+    }
+}
