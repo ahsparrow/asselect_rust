@@ -207,7 +207,13 @@ impl Component for App {
                     }
                     "gliding" => self.settings.airspace.gliding = value,
                     "home" => self.settings.airspace.home = value,
-                    "hirta_gvs" => self.settings.airspace.hirta_gvs = value,
+                    "hirta_gvs" => {
+                        self.settings.airspace.hirta_gvs = match value.as_str() {
+                            "danger" => Some(AirType::Q),
+                            "restricted" => Some(AirType::R),
+                            _ => None,
+                        }
+                    }
                     "obstacle" => self.settings.airspace.obstacle = value,
 
                     "max_level" => self.settings.options.max_level = value.parse::<u16>().unwrap(),

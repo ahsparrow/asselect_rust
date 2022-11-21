@@ -142,9 +142,9 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="hirta_gvs" onchange={onchange.clone()}>
-                      <option value="exclude" selected={set.hirta_gvs == "exclude"}>{"Exclude"}</option>
-                      <option value="danger" selected={set.hirta_gvs == "danger"}>{"Danger"}</option>
-                      <option value="restricted" selected={set.hirta_gvs == "restricted"}>{"Restricted"}</option>
+                      <option value="exclude" selected={set.hirta_gvs == None}>{"Exclude"}</option>
+                      <option value="danger" selected={set.hirta_gvs == Some(AirType::Q)}>{"Danger"}</option>
+                      <option value="restricted" selected={set.hirta_gvs == Some(AirType::R)}>{"Restricted"}</option>
                     </select>
                   </div>
                 </div>

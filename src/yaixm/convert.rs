@@ -68,7 +68,7 @@ pub struct Airspace {
     pub microlight: Option<AirType>,
     pub gliding: String,
     pub home: String,
-    pub hirta_gvs: String,
+    pub hirta_gvs: Option<AirType>,
     pub obstacle: String,
 }
 
@@ -100,7 +100,7 @@ impl Default for Airspace {
             microlight: None,
             gliding: "exclude".to_string(),
             home: "None".to_string(),
-            hirta_gvs: "exclude".to_string(),
+            hirta_gvs: None,
             obstacle: "exclude".to_string(),
         }
     }
@@ -134,7 +134,7 @@ fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
         }
         // HIRTA/GVS/Laser
         Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) => {
-            settings.airspace.hirta_gvs == "exclude"
+            settings.airspace.hirta_gvs == None
         }
         _ => false,
     };
@@ -230,10 +230,7 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
         _ => "W",
     };
 
-    let hirta_gvs = match settings.airspace.hirta_gvs.as_str() {
-        "restricted" => "R",
-        _ => "Q",
-    };
+    let hirta_gvs = settings.airspace.hirta_gvs.as_ref().unwrap_or(&AirType::Other).to_string();
 
     let rules = feature
         .rules
@@ -269,7 +266,7 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
                 } else {
                     match feature.local_type {
                         Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) => {
-                            hirta_gvs
+                            hirta_gvs.as_str()
                         }
                         Some(LocalType::Glider) => "W",
                         _ => "Q",
