@@ -343,6 +343,14 @@ fn do_boundary(boundary: &[Boundary]) -> String {
             Boundary::Circle(circle) => out.push_str(&do_circle(circle)),
         }
     }
+
+    // Close the polygon
+    if let Boundary::Line(line) = &boundary[0] {
+        if line[0] != prev {
+            out.push_str(&do_point(&line[0]));
+        }
+    }
+
     out
 }
 
