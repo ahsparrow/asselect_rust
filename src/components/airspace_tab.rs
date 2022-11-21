@@ -157,8 +157,8 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="obstacle" onchange={onchange.clone()}>
-                      <option value="exclude" selected={set.obstacle == "exclude"}>{"Exclude"}</option>
-                      <option value="include" selected={set.obstacle == "include"}>{"Include"}</option>
+                      <option value="exclude" selected={!set.obstacle}>{"Exclude"}</option>
+                      <option value="include" selected={set.obstacle}>{"Include"}</option>
                     </select>
                   </div>
                 </div>

@@ -69,7 +69,7 @@ pub struct Airspace {
     pub gliding: String,
     pub home: String,
     pub hirta_gvs: Option<AirType>,
-    pub obstacle: String,
+    pub obstacle: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
@@ -101,7 +101,7 @@ impl Default for Airspace {
             gliding: "exclude".to_string(),
             home: "None".to_string(),
             hirta_gvs: None,
-            obstacle: "exclude".to_string(),
+            obstacle: false,
         }
     }
 }

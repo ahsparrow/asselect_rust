@@ -214,7 +214,7 @@ impl Component for App {
                             _ => None,
                         }
                     }
-                    "obstacle" => self.settings.airspace.obstacle = value,
+                    "obstacle" => self.settings.airspace.obstacle = value == "include",
 
                     "max_level" => self.settings.options.max_level = value.parse::<u16>().unwrap(),
                     "radio" => self.settings.options.radio = value == "yes",
