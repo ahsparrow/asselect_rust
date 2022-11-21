@@ -5,8 +5,54 @@ use crate::yaixm::{
 };
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
+use std::fmt;
 
 // Settings
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub enum AirType {
+    A,
+    B,
+    C,
+    D,
+    E,
+    F,
+    G,
+    P,
+    Q,
+    R,
+    W,
+    Cta,
+    Ctr,
+    Matz,
+    Other,
+    Rmz,
+    Tmz
+}
+
+impl fmt::Display for AirType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            AirType::A => write!(f, "A"),
+            AirType::B => write!(f, "B"),
+            AirType::C => write!(f, "C"),
+            AirType::D => write!(f, "D"),
+            AirType::E => write!(f, "E"),
+            AirType::F => write!(f, "F"),
+            AirType::G => write!(f, "G"),
+            AirType::P => write!(f, "P"),
+            AirType::Q => write!(f, "Q"),
+            AirType::R => write!(f, "R"),
+            AirType::W => write!(f, "W"),
+            AirType::Cta => write!(f, "CTA"),
+            AirType::Ctr => write!(f, "CTR"),
+            AirType::Matz => write!(f, "MATZ"),
+            AirType::Other => write!(f, "OTHER"),
+            AirType::Rmz => write!(f, "RMZ"),
+            AirType::Tmz => write!(f, "RMZ"),
+        }
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum Format {
     OpenAir,
@@ -18,8 +64,8 @@ pub enum Format {
 pub struct Airspace {
     pub atz: String,
     pub ils: String,
-    pub unlicensed: String,
-    pub microlight: String,
+    pub unlicensed: Option<AirType>,
+    pub microlight: Option<AirType>,
     pub gliding: String,
     pub home: String,
     pub hirta_gvs: String,
@@ -50,8 +96,8 @@ impl Default for Airspace {
         Airspace {
             atz: "ctr".to_string(),
             ils: "atz".to_string(),
-            unlicensed: "exclude".to_string(),
-            microlight: "exclude".to_string(),
+            unlicensed: None,
+            microlight: None,
             gliding: "exclude".to_string(),
             home: "None".to_string(),
             hirta_gvs: "exclude".to_string(),
@@ -75,9 +121,9 @@ impl Default for Options {
 fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
     let exclude = match feature.local_type {
         // No-ATZ
-        Some(LocalType::NoAtz) => &settings.airspace.unlicensed == "exclude",
-        // Unlicensed
-        Some(LocalType::Ul) => &settings.airspace.microlight == "exclude",
+        Some(LocalType::NoAtz) => settings.airspace.unlicensed == None,
+        // Microlight
+        Some(LocalType::Ul) => settings.airspace.microlight == None,
         // Wave Box
         Some(LocalType::Glider) if feature.icao_type == IcaoType::DOther => {
             !settings.wave.contains(&feature.name)
@@ -181,15 +227,9 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
         _ => "G",
     };
 
-    let noatz = match settings.airspace.unlicensed.as_str() {
-        "classf" => "F",
-        _ => "G",
-    };
+    let noatz = settings.airspace.unlicensed.as_ref().unwrap_or(&AirType::Other).to_string();
 
-    let ul = match settings.airspace.microlight.as_str() {
-        "classf" => "F",
-        _ => "G",
-    };
+    let ul = settings.airspace.microlight.as_ref().unwrap_or(&AirType::Other).to_string();
 
     let glider = match settings.airspace.gliding.as_str() {
         "classf" => "F",
@@ -253,10 +293,10 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
                 }
                 Some(LocalType::Ils) => ils,
                 Some(LocalType::Matz) => "MATZ",
-                Some(LocalType::NoAtz) => noatz,
+                Some(LocalType::NoAtz) => noatz.as_str(),
                 Some(LocalType::Rat) => "P",
                 Some(LocalType::Tmz) => "TMZ",
-                Some(LocalType::Ul) => ul,
+                Some(LocalType::Ul) => ul.as_str(),
                 Some(LocalType::Rmz) => "RMZ",
                 _ => "OTHER",
             },

@@ -5,7 +5,7 @@ use gloo_file::{Blob, ObjectUrl};
 use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
 use wasm_bindgen::JsCast;
-use yaixm::convert::{openair, Format, Settings};
+use yaixm::convert::{openair, AirType, Format, Settings};
 use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
 use yaixm::Yaixm;
 use yew::{html, Component, Context, Html};
@@ -180,8 +180,20 @@ impl Component for App {
                 match setting.name.as_str() {
                     "atz" => self.settings.airspace.atz = value,
                     "ils" => self.settings.airspace.ils = value,
-                    "unlicensed" => self.settings.airspace.unlicensed = value,
-                    "microlight" => self.settings.airspace.microlight = value,
+                    "unlicensed" => {
+                        self.settings.airspace.unlicensed = match value.as_str() {
+                            "classf" => Some(AirType::F),
+                            "classg" => Some(AirType::G),
+                            _ => None
+                        }
+                    }
+                    "microlight" => {
+                        self.settings.airspace.microlight = match value.as_str() {
+                            "classf" => Some(AirType::F),
+                            "classg" => Some(AirType::G),
+                            _ => None
+                        }
+                    }
                     "gliding" => self.settings.airspace.gliding = value,
                     "home" => self.settings.airspace.home = value,
                     "hirta_gvs" => self.settings.airspace.hirta_gvs = value,
