@@ -153,7 +153,7 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
             qualifiers.sort();
             qualifiers.reverse();
             name.push(' ');
-            name += &qualifiers.join("/");
+            name += format!("({})", &qualifiers.join("/")).as_ref();
         }
 
         // Optionally append frequency
