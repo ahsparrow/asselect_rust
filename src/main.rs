@@ -178,8 +178,19 @@ impl Component for App {
             Msg::AirspaceSet(setting) => {
                 let value = setting.value;
                 match setting.name.as_str() {
-                    "atz" => self.settings.airspace.atz = value,
-                    "ils" => self.settings.airspace.ils = value,
+                    "atz" => {
+                        self.settings.airspace.atz = match value.as_str() {
+                            "classd" => AirType::D,
+                            _ => AirType::Ctr,
+                        }
+                    }
+                    "ils" => {
+                        self.settings.airspace.ils = match value.as_str() {
+                            "classf" => Some(AirType::F),
+                            "classg" => Some(AirType::G),
+                            _ => None,
+                        }
+                    }
                     "unlicensed" => {
                         self.settings.airspace.unlicensed = match value.as_str() {
                             "classf" => Some(AirType::F),

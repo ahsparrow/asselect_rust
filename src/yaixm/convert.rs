@@ -62,8 +62,8 @@ pub enum Format {
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Airspace {
-    pub atz: String,
-    pub ils: String,
+    pub atz: AirType,
+    pub ils: Option<AirType>,
     pub unlicensed: Option<AirType>,
     pub microlight: Option<AirType>,
     pub gliding: String,
@@ -94,8 +94,8 @@ pub struct Settings {
 impl Default for Airspace {
     fn default() -> Self {
         Airspace {
-            atz: "ctr".to_string(),
-            ils: "atz".to_string(),
+            atz: AirType::Ctr,
+            ils: None,
             unlicensed: None,
             microlight: None,
             gliding: "exclude".to_string(),
@@ -216,16 +216,9 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
 }
 
 fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
-    let atz = match settings.airspace.atz.as_str() {
-        "classd" => "D",
-        _ => "CTR",
-    };
+    let atz = settings.airspace.atz.to_string();
 
-    let ils = match settings.airspace.ils.as_str() {
-        "atz" => atz,
-        "classf" => "F",
-        _ => "G",
-    };
+    let ils = settings.airspace.ils.as_ref().unwrap_or(&settings.airspace.atz).to_string();
 
     let noatz = settings.airspace.unlicensed.as_ref().unwrap_or(&AirType::Other).to_string();
 
@@ -256,7 +249,7 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
         "G"
     } else {
         match feature.icao_type {
-            IcaoType::Atz => atz,
+            IcaoType::Atz => atz.as_str(),
             IcaoType::D => {
                 if comp && rules.contains(&Rule::Si) {
                     // Danger area with SI
@@ -291,7 +284,7 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
                         glider
                     }
                 }
-                Some(LocalType::Ils) => ils,
+                Some(LocalType::Ils) => ils.as_str(),
                 Some(LocalType::Matz) => "MATZ",
                 Some(LocalType::NoAtz) => noatz.as_str(),
                 Some(LocalType::Rat) => "P",

@@ -44,8 +44,8 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="atz" onchange={onchange.clone()}>
-                      <option value="classd" selected={set.atz == "classd"}>{"Class D"}</option>
-                      <option value="ctr" selected={set.atz == "ctr"}>{"Control Zone"}</option>
+                      <option value="classd" selected={set.atz == AirType::D}>{"Class D"}</option>
+                      <option value="ctr" selected={set.atz == AirType::Ctr}>{"Control Zone"}</option>
                     </select>
                   </div>
                 </div>
@@ -58,9 +58,9 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="ils" onchange={onchange.clone()}>
-                      <option value="atz" selected={set.ils == "atz"}>{"As ATZ"}</option>
-                      <option value="classf" selected={set.ils == "classf"}>{"Class F"}</option>
-                      <option value="classg" selected={set.ils == "classg"}>{"Class G"}</option>
+                      <option value="atz" selected={set.ils == None}>{"As ATZ"}</option>
+                      <option value="classf" selected={set.ils == Some(AirType::F)}>{"Class F"}</option>
+                      <option value="classg" selected={set.ils == Some(AirType::G)}>{"Class G"}</option>
                     </select>
                   </div>
                 </div>
