@@ -291,6 +291,10 @@ fn do_levels(volume: &Volume) -> String {
     )
 }
 
+fn do_freq(freq: f64) -> String{
+    format!("AF {:.3}\n", freq)
+}
+
 fn do_point(point: &str) -> String {
     format!("DP {}\n", format_latlon(point))
 }
@@ -356,22 +360,30 @@ fn do_boundary(boundary: &[Boundary]) -> String {
 
 fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
     // Create frequency map
-    let mut freqs = HashMap::new();
+    let mut frequencies = HashMap::new();
     for service in services {
         for id in &service.controls {
-            freqs.insert(id, service.frequency);
+            frequencies.insert(id, service.frequency);
         }
     }
 
     // Add frequency properties
     for feature in airspace {
         for volume in &mut feature.geometry {
-            let id = volume.id.as_ref().or(feature.id.as_ref());
-            if let Some(id) = id {
-                if let Some(f) = freqs.get(&id) {
-                    volume.frequency = Some(*f);
-                }
-            }
+
+            let volume_freq = if let Some(id) = &volume.id {
+                frequencies.get(&id)
+            } else {
+                None
+            };
+
+            let feature_freq = if let Some(id) = &feature.id {
+                frequencies.get(&id)
+            } else {
+                None
+            };
+
+            volume.frequency = volume_freq.or(feature_freq).cloned();
         }
     }
 }
@@ -383,13 +395,16 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
     merge_services(&mut airspace, &yaixm.service);
 
     for feature in airspace {
-        for (n, vol) in feature.geometry.iter().enumerate() {
-            if airfilter(&feature, vol, settings) {
+        for (n, volume) in feature.geometry.iter().enumerate() {
+            if airfilter(&feature, volume, settings) {
                 output.push_str("*\n");
-                output.push_str(&do_type(&feature, vol, settings));
-                output.push_str(&do_name(&feature, vol, n, settings));
-                output.push_str(&do_levels(vol));
-                output.push_str(&do_boundary(&vol.boundary));
+                output.push_str(&do_type(&feature, volume, settings));
+                output.push_str(&do_name(&feature, volume, n, settings));
+                if let Some(freq) = volume.frequency {
+                    output.push_str(&do_freq(freq));
+                }
+                output.push_str(&do_levels(volume));
+                output.push_str(&do_boundary(&volume.boundary));
             }
         }
     }
