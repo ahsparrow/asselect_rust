@@ -21,7 +21,7 @@ pub fn icao_class_str(class: &IcaoClass) -> &'static str {
         IcaoClass::B => "B",
         IcaoClass::C => "C",
         IcaoClass::D => "D",
-        IcaoClass::E => "D",
+        IcaoClass::E => "E",
         IcaoClass::F => "F",
         IcaoClass::G => "G",
     }
