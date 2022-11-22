@@ -195,29 +195,26 @@ impl Component for App {
                         self.settings.airspace.unlicensed = match value.as_str() {
                             "classf" => Some(AirType::F),
                             "classg" => Some(AirType::G),
-                            _ => None
+                            _ => None,
                         }
                     }
                     "microlight" => {
                         self.settings.airspace.microlight = match value.as_str() {
                             "classf" => Some(AirType::F),
                             "classg" => Some(AirType::G),
-                            _ => None
+                            _ => None,
                         }
                     }
                     "gliding" => {
                         self.settings.airspace.gliding = match value.as_str() {
                             "gsec" => Some(AirType::W),
                             "classf" => Some(AirType::F),
-                            _  => Some(AirType::G),
+                            _ => Some(AirType::G),
                         }
                     }
                     "home" => {
-                        self.settings.airspace.home = if value == "None" {
-                            None
-                        } else {
-                            Some(value)
-                        }
+                        self.settings.airspace.home =
+                            if value == "None" { None } else { Some(value) }
                     }
                     "hirta_gvs" => {
                         self.settings.airspace.hirta_gvs = match value.as_str() {
@@ -232,11 +229,13 @@ impl Component for App {
                     "radio" => self.settings.options.radio = value == "yes",
                     "north" => self.settings.options.north = value.parse::<f64>().unwrap(),
                     "south" => self.settings.options.south = value.parse::<f64>().unwrap(),
-                    "format" => self.settings.options.format = match value.as_ref() {
-                        "ratonly" => Format::RatOnly,
-                        "competition" => Format::Competition,
-                        _ => Format::OpenAir,
-                    },
+                    "format" => {
+                        self.settings.options.format = match value.as_ref() {
+                            "ratonly" => Format::RatOnly,
+                            "competition" => Format::Competition,
+                            _ => Format::OpenAir,
+                        }
+                    }
                     _ => (),
                 }
                 true

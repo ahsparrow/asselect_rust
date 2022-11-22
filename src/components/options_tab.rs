@@ -1,5 +1,5 @@
-use crate::AirspaceSetting;
 use crate::yaixm::convert::{Format, Options};
+use crate::AirspaceSetting;
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, Callback, Event, Properties, TargetCast};
 

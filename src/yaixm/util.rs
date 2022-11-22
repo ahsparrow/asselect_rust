@@ -62,7 +62,17 @@ pub fn format_level(level: &str) -> String {
 }
 
 pub fn format_latlon(latlon: &str) -> String {
-    format!("{}:{}:{} {} {}:{}:{} {}", &latlon[..2], &latlon[2..4], &latlon[4..6], &latlon[6..7], &latlon[8..11], &latlon[11..13], &latlon[13..15], &latlon[15..16])
+    format!(
+        "{}:{}:{} {} {}:{}:{} {}",
+        &latlon[..2],
+        &latlon[2..4],
+        &latlon[4..6],
+        &latlon[6..7],
+        &latlon[8..11],
+        &latlon[11..13],
+        &latlon[13..15],
+        &latlon[15..16]
+    )
 }
 
 pub fn format_distance(distance: &str) -> String {
