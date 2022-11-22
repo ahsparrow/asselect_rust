@@ -28,7 +28,7 @@ pub fn airspace_tab(props: &Props) -> Html {
             .iter()
             .map(|name| {
                 html! {
-                    <option selected={*name==set.home} >{name}</option>
+                    <option selected={Some(name) == set.home.as_ref()} >{name}</option>
                 }
             })
             .collect::<Html>()
@@ -109,10 +109,10 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="gliding" onchange={onchange.clone()}>
-                      <option value="exclude" selected={set.gliding == "exclude"}>{"Exclude"}</option>
-                      <option value="glidingsector" selected={set.gliding == "glidingsector"}>{"Gliding Sector"}</option>
-                      <option value="classf" selected={set.gliding == "classf"}>{"Class F"}</option>
-                      <option value="classg" selected={set.gliding == "classg"}>{"Class G"}</option>
+                      <option value="exclude" selected={set.gliding == None}>{"Exclude"}</option>
+                      <option value="gsec" selected={set.gliding == Some(AirType::W)}>{"Gliding Sector"}</option>
+                      <option value="classf" selected={set.gliding == Some(AirType::F)}>{"Class F"}</option>
+                      <option value="classg" selected={set.gliding == Some(AirType::G)}>{"Class G"}</option>
                     </select>
                   </div>
                 </div>
@@ -125,7 +125,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="home" onchange={onchange.clone()}>
-                      <option selected={set.home=="None"}>{"None"}</option>
+                      <option selected={set.home == None}>{"None"}</option>
                       { gliding_sites() }
                     </select>
                   </div>

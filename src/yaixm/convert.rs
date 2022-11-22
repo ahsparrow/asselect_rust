@@ -66,8 +66,8 @@ pub struct Airspace {
     pub ils: Option<AirType>,
     pub unlicensed: Option<AirType>,
     pub microlight: Option<AirType>,
-    pub gliding: String,
-    pub home: String,
+    pub gliding: Option<AirType>,
+    pub home: Option<String>,
     pub hirta_gvs: Option<AirType>,
     pub obstacle: bool,
 }
@@ -98,8 +98,8 @@ impl Default for Airspace {
             ils: None,
             unlicensed: None,
             microlight: None,
-            gliding: "exclude".to_string(),
-            home: "None".to_string(),
+            gliding: None,
+            home: None,
             hirta_gvs: None,
             obstacle: false,
         }
@@ -130,7 +130,7 @@ fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
         }
         // Gliding Site
         Some(LocalType::Glider) => {
-            settings.airspace.gliding == "exclude" || settings.airspace.home == feature.name
+            settings.airspace.gliding == None || settings.airspace.home.as_ref() == Some(&feature.name)
         }
         // HIRTA/GVS/Laser
         Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) => {
@@ -217,19 +217,10 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
 
 fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
     let atz = settings.airspace.atz.to_string();
-
-    let ils = settings.airspace.ils.as_ref().unwrap_or(&settings.airspace.atz).to_string();
-
-    let noatz = settings.airspace.unlicensed.as_ref().unwrap_or(&AirType::Other).to_string();
-
     let ul = settings.airspace.microlight.as_ref().unwrap_or(&AirType::Other).to_string();
-
-    let glider = match settings.airspace.gliding.as_str() {
-        "classf" => "F",
-        "classg" => "G",
-        _ => "W",
-    };
-
+    let ils = settings.airspace.ils.as_ref().unwrap_or(&settings.airspace.atz).to_string();
+    let noatz = settings.airspace.unlicensed.as_ref().unwrap_or(&AirType::Other).to_string();
+    let gliding = settings.airspace.gliding.as_ref().unwrap_or(&AirType::Other).to_string();
     let hirta_gvs = settings.airspace.hirta_gvs.as_ref().unwrap_or(&AirType::Other).to_string();
 
     let rules = feature
@@ -278,7 +269,7 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
                     if rules.contains(&Rule::Loa) {
                         "W"
                     } else {
-                        glider
+                        gliding.as_str()
                     }
                 }
                 Some(LocalType::Ils) => ils.as_str(),

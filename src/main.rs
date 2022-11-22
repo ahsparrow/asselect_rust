@@ -205,8 +205,20 @@ impl Component for App {
                             _ => None
                         }
                     }
-                    "gliding" => self.settings.airspace.gliding = value,
-                    "home" => self.settings.airspace.home = value,
+                    "gliding" => {
+                        self.settings.airspace.gliding = match value.as_str() {
+                            "gsec" => Some(AirType::W),
+                            "classf" => Some(AirType::F),
+                            _  => Some(AirType::G),
+                        }
+                    }
+                    "home" => {
+                        self.settings.airspace.home = if value == "None" {
+                            None
+                        } else {
+                            Some(value)
+                        }
+                    }
                     "hirta_gvs" => {
                         self.settings.airspace.hirta_gvs = match value.as_str() {
                             "danger" => Some(AirType::Q),
