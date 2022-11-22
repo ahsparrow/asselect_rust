@@ -26,7 +26,7 @@ pub enum AirType {
     Matz,
     Other,
     Rmz,
-    Tmz
+    Tmz,
 }
 
 impl fmt::Display for AirType {
@@ -130,7 +130,8 @@ fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
         }
         // Gliding Site
         Some(LocalType::Glider) => {
-            settings.airspace.gliding == None || settings.airspace.home.as_ref() == Some(&feature.name)
+            settings.airspace.gliding == None
+                || settings.airspace.home.as_ref() == Some(&feature.name)
         }
         // HIRTA/GVS/Laser
         Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) => {
@@ -217,11 +218,36 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
 
 fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
     let atz = settings.airspace.atz.to_string();
-    let ul = settings.airspace.microlight.as_ref().unwrap_or(&AirType::Other).to_string();
-    let ils = settings.airspace.ils.as_ref().unwrap_or(&settings.airspace.atz).to_string();
-    let noatz = settings.airspace.unlicensed.as_ref().unwrap_or(&AirType::Other).to_string();
-    let gliding = settings.airspace.gliding.as_ref().unwrap_or(&AirType::Other).to_string();
-    let hirta_gvs = settings.airspace.hirta_gvs.as_ref().unwrap_or(&AirType::Other).to_string();
+    let ul = settings
+        .airspace
+        .microlight
+        .as_ref()
+        .unwrap_or(&AirType::Other)
+        .to_string();
+    let ils = settings
+        .airspace
+        .ils
+        .as_ref()
+        .unwrap_or(&settings.airspace.atz)
+        .to_string();
+    let noatz = settings
+        .airspace
+        .unlicensed
+        .as_ref()
+        .unwrap_or(&AirType::Other)
+        .to_string();
+    let gliding = settings
+        .airspace
+        .gliding
+        .as_ref()
+        .unwrap_or(&AirType::Other)
+        .to_string();
+    let hirta_gvs = settings
+        .airspace
+        .hirta_gvs
+        .as_ref()
+        .unwrap_or(&AirType::Other)
+        .to_string();
 
     let rules = feature
         .rules
@@ -312,7 +338,7 @@ fn do_levels(volume: &Volume) -> String {
     )
 }
 
-fn do_freq(freq: f64) -> String{
+fn do_freq(freq: f64) -> String {
     format!("AF {:.3}\n", freq)
 }
 
@@ -336,11 +362,7 @@ fn do_circle(circle: &Circle) -> String {
 }
 
 fn do_arc(arc: &Arc, from: &str) -> String {
-    let dir = if arc.dir == "cw" {
-        "+"
-    } else {
-        "-"
-    };
+    let dir = if arc.dir == "cw" { "+" } else { "-" };
 
     format!(
         "V D={}\nV X={}\nDB {}, {}\n",
@@ -391,7 +413,6 @@ fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
     // Add frequency properties
     for feature in airspace {
         for volume in &mut feature.geometry {
-
             let volume_freq = if let Some(id) = &volume.id {
                 frequencies.get(&id)
             } else {
