@@ -33,12 +33,12 @@ pub struct ExtraSetting {
 }
 
 enum Msg {
-    Save,
     AirspaceSet(AirspaceSetting),
     ExtraClear(ExtraCategory),
     ExtraSet(ExtraSetting),
-    YaixmError,
+    Save,
     YaixmData(Yaixm),
+    YaixmError,
 }
 
 // App component
@@ -130,12 +130,15 @@ impl App {
     }
 
     fn save(&self) {
+        // Save settings in local storage
         LocalStorage::set("settings", self.settings.clone()).unwrap();
 
+        // Create OpenAir data
         let oa = openair(self.yaixm.as_ref().unwrap(), &self.settings);
         let blob = Blob::new(oa.as_str());
         let object_url = ObjectUrl::from(blob);
 
+        // Trigger a "fake" download to save the data
         let download_anchor = document()
             .get_element_by_id("download")
             .expect("No document")
@@ -147,11 +150,23 @@ impl App {
     }
 }
 
+fn default_set(value: &str) -> Option<AirType> {
+    match value {
+        "classf" => Some(AirType::F),
+        "classg" => Some(AirType::G),
+        "danger" => Some(AirType::Q),
+        "restricted" => Some(AirType::R),
+        "gsec" => Some(AirType::W),
+        _ => None,
+    }
+}
+
 impl Component for App {
     type Message = Msg;
     type Properties = ();
 
     fn create(ctx: &Context<Self>) -> Self {
+        // Fetch YAIXM airspace data
         ctx.link().send_future(async {
             match fetch_yaixm().await {
                 Ok(yaixm) => Msg::YaixmData(yaixm),
@@ -178,59 +193,28 @@ impl Component for App {
             Msg::AirspaceSet(setting) => {
                 let value = setting.value;
                 match setting.name.as_str() {
+                    "ils" => self.settings.airspace.ils = default_set(&value),
+                    "unlicensed" => self.settings.airspace.unlicensed = default_set(&value),
+                    "microlight" => self.settings.airspace.microlight = default_set(&value),
+                    "gliding" => self.settings.airspace.gliding = default_set(&value),
+                    "hirta_gvs" => self.settings.airspace.hirta_gvs = default_set(&value),
+                    "obstacle" => self.settings.airspace.obstacle = value == "include",
+                    "max_level" => self.settings.options.max_level = value.parse::<u16>().unwrap(),
+                    "radio" => self.settings.options.radio = value == "yes",
+                    "north" => self.settings.options.north = value.parse::<f64>().unwrap(),
+                    "south" => self.settings.options.south = value.parse::<f64>().unwrap(),
                     "atz" => {
                         self.settings.airspace.atz = match value.as_str() {
                             "classd" => AirType::D,
                             _ => AirType::Ctr,
                         }
                     }
-                    "ils" => {
-                        self.settings.airspace.ils = match value.as_str() {
-                            "classf" => Some(AirType::F),
-                            "classg" => Some(AirType::G),
-                            _ => None,
-                        }
-                    }
-                    "unlicensed" => {
-                        self.settings.airspace.unlicensed = match value.as_str() {
-                            "classf" => Some(AirType::F),
-                            "classg" => Some(AirType::G),
-                            _ => None,
-                        }
-                    }
-                    "microlight" => {
-                        self.settings.airspace.microlight = match value.as_str() {
-                            "classf" => Some(AirType::F),
-                            "classg" => Some(AirType::G),
-                            _ => None,
-                        }
-                    }
-                    "gliding" => {
-                        self.settings.airspace.gliding = match value.as_str() {
-                            "gsec" => Some(AirType::W),
-                            "classf" => Some(AirType::F),
-                            _ => Some(AirType::G),
-                        }
-                    }
                     "home" => {
                         self.settings.airspace.home =
                             if value == "None" { None } else { Some(value) }
                     }
-                    "hirta_gvs" => {
-                        self.settings.airspace.hirta_gvs = match value.as_str() {
-                            "danger" => Some(AirType::Q),
-                            "restricted" => Some(AirType::R),
-                            _ => None,
-                        }
-                    }
-                    "obstacle" => self.settings.airspace.obstacle = value == "include",
-
-                    "max_level" => self.settings.options.max_level = value.parse::<u16>().unwrap(),
-                    "radio" => self.settings.options.radio = value == "yes",
-                    "north" => self.settings.options.north = value.parse::<f64>().unwrap(),
-                    "south" => self.settings.options.south = value.parse::<f64>().unwrap(),
                     "format" => {
-                        self.settings.options.format = match value.as_ref() {
+                        self.settings.options.format = match value.as_str() {
                             "ratonly" => Format::RatOnly,
                             "competition" => Format::Competition,
                             _ => Format::OpenAir,
