@@ -1,14 +1,14 @@
 use crate::yaixm::util::{format_distance, format_latlon, format_level, norm_level};
 use crate::yaixm::{
-    icao_class_str, local_type_str, rule_str, Arc, Boundary, Circle, Feature, IcaoType, LocalType,
-    Rule, Service, Volume, Yaixm,
+    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, LocalType, Rule, Service,
+    Volume, Yaixm,
 };
 use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 
 // Settings
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub enum AirType {
     A,
     B,
@@ -118,6 +118,7 @@ impl Default for Options {
     }
 }
 
+// Remove unwanted feature/volume
 fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
     let exclude = match feature.local_type {
         // No-ATZ
@@ -143,6 +144,7 @@ fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
     !(exclude || (norm_level(&vol.lower) >= settings.options.max_level))
 }
 
+// Give each volume a name
 fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> String {
     let name = if let Some(name) = &vol.name {
         name.clone()
@@ -167,7 +169,7 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
         | Some(LocalType::Laser) = feature.local_type
         {
             name.push(' ');
-            name += local_type_str(feature.local_type.as_ref().unwrap());
+            name += feature.local_type.unwrap().to_string().as_str();
         } else if feature.icao_type == IcaoType::Atz {
             name += " ATZ";
         } else if rules.contains(&Rule::Raz) {
@@ -193,14 +195,14 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
         let mut qualifiers = rules
             .into_iter()
             .filter(|&x| *x == Rule::Si || *x == Rule::Notam)
-            .map(rule_str)
-            .collect::<Vec<&str>>();
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>();
 
         if !qualifiers.is_empty() {
             qualifiers.sort();
             qualifiers.reverse();
             name.push(' ');
-            name += format!("({})", &qualifiers.join("/")).as_ref();
+            name += format!("({})", qualifiers.join("/")).as_ref();
         }
 
         // Optionally append frequency
@@ -216,47 +218,49 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
     format!("AN {}\n", name)
 }
 
-fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
+// Give each volume a type
+fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
     let atz = settings.airspace.atz.to_string();
     let ul = settings
         .airspace
         .microlight
-        .as_ref()
-        .unwrap_or(&AirType::Other)
+        .unwrap_or(AirType::Other)
         .to_string();
     let ils = settings
         .airspace
         .ils
-        .as_ref()
-        .unwrap_or(&settings.airspace.atz)
+        .unwrap_or(settings.airspace.atz)
         .to_string();
     let noatz = settings
         .airspace
         .unlicensed
-        .as_ref()
-        .unwrap_or(&AirType::Other)
+        .unwrap_or(AirType::Other)
         .to_string();
     let gliding = settings
         .airspace
         .gliding
-        .as_ref()
-        .unwrap_or(&AirType::Other)
+        .unwrap_or(AirType::Other)
         .to_string();
     let hirta_gvs = settings
         .airspace
         .hirta_gvs
-        .as_ref()
-        .unwrap_or(&AirType::Other)
+        .unwrap_or(AirType::Other)
         .to_string();
 
     let rules = feature
         .rules
         .iter()
-        .chain(vol.rules.iter())
+        .chain(volume.rules.iter())
         .flatten()
         .collect::<HashSet<&Rule>>();
 
     let comp = settings.options.format == Format::Competition;
+
+    let volume_class = volume
+        .icao_class
+        .or(feature.icao_class)
+        .unwrap_or(IcaoClass::G)
+        .to_string();
 
     let openair_type = if rules.contains(&Rule::Notam) {
         // NOTAM activated airspace
@@ -315,13 +319,7 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
                 } else if rules.contains(&Rule::Rmz) {
                     "RMZ"
                 } else {
-                    match &vol.icao_class {
-                        Some(vc) => icao_class_str(vc),
-                        None => match &feature.icao_class {
-                            Some(fc) => icao_class_str(fc),
-                            None => "OTHER",
-                        },
-                    }
+                    volume_class.as_str()
                 }
             }
         }
@@ -333,8 +331,8 @@ fn do_type(feature: &Feature, vol: &Volume, settings: &Settings) -> String {
 fn do_levels(volume: &Volume) -> String {
     format!(
         "AL {}\nAH {}\n",
-        &format_level(&volume.lower),
-        &format_level(&volume.upper)
+        format_level(&volume.lower),
+        format_level(&volume.upper)
     )
 }
 

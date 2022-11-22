@@ -1,10 +1,11 @@
 use serde::Deserialize;
 use std::collections::HashSet;
+use std::fmt;
 
 pub mod convert;
 pub mod util;
 
-#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Deserialize, Debug, Eq, PartialEq)]
 pub enum IcaoClass {
     A,
     B,
@@ -15,19 +16,21 @@ pub enum IcaoClass {
     G,
 }
 
-pub fn icao_class_str(class: &IcaoClass) -> &'static str {
-    match class {
-        IcaoClass::A => "A",
-        IcaoClass::B => "B",
-        IcaoClass::C => "C",
-        IcaoClass::D => "D",
-        IcaoClass::E => "E",
-        IcaoClass::F => "F",
-        IcaoClass::G => "G",
+impl fmt::Display for IcaoClass {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            IcaoClass::A => write!(f, "A"),
+            IcaoClass::B => write!(f, "B"),
+            IcaoClass::C => write!(f, "C"),
+            IcaoClass::D => write!(f, "D"),
+            IcaoClass::E => write!(f, "E"),
+            IcaoClass::F => write!(f, "F"),
+            IcaoClass::G => write!(f, "G"),
+        }
     }
 }
 
-#[derive(Clone, Deserialize, Eq, PartialEq, Debug)]
+#[derive(Clone, Copy, Deserialize, Eq, PartialEq, Debug)]
 #[allow(nonstandard_style)]
 pub enum IcaoType {
     #[serde(rename = "ATZ")]
@@ -49,7 +52,7 @@ pub enum IcaoType {
     Tma,
 }
 
-#[derive(Clone, Deserialize, Eq, PartialEq, Debug)]
+#[derive(Clone, Copy, Deserialize, Eq, PartialEq, Debug)]
 pub enum LocalType {
     #[serde(rename = "DZ")]
     Dz,
@@ -77,24 +80,26 @@ pub enum LocalType {
     Tmz,
 }
 
-pub fn local_type_str(class: &LocalType) -> &'static str {
-    match class {
-        LocalType::Dz => "DZ",
-        LocalType::Glider => "GLIDER",
-        LocalType::Gvs => "GVS",
-        LocalType::Hirta => "HIRTA",
-        LocalType::Ils => "ILS",
-        LocalType::Laser => "LASER",
-        LocalType::Matz => "MATZ",
-        LocalType::NoAtz => "NOATZ",
-        LocalType::Rat => "RAT",
-        LocalType::Rmz => "RMZ",
-        LocalType::Ul => "UL",
-        LocalType::Tmz => "TMZ",
+impl fmt::Display for LocalType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            LocalType::Dz => write!(f, "DZ"),
+            LocalType::Glider => write!(f, "GLIDER"),
+            LocalType::Gvs => write!(f, "GVS"),
+            LocalType::Hirta => write!(f, "HIRTA"),
+            LocalType::Ils => write!(f, "ILS"),
+            LocalType::Laser => write!(f, "LASER"),
+            LocalType::Matz => write!(f, "MATZ"),
+            LocalType::NoAtz => write!(f, "NOATZ"),
+            LocalType::Rat => write!(f, "RAT"),
+            LocalType::Rmz => write!(f, "RMZ"),
+            LocalType::Ul => write!(f, "UL"),
+            LocalType::Tmz => write!(f, "TMZ"),
+        }
     }
 }
 
-#[derive(Clone, Deserialize, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Deserialize, Debug, Eq, Hash, PartialEq)]
 pub enum Rule {
     #[serde(rename = "INTENSE")]
     Intense,
@@ -116,17 +121,19 @@ pub enum Rule {
     Tmz,
 }
 
-pub fn rule_str(rule: &Rule) -> &'static str {
-    match rule {
-        Rule::Intense => "INTENSE",
-        Rule::Loa => "LOA",
-        Rule::NoSsr => "NOSSR",
-        Rule::Notam => "NOTAM",
-        Rule::Raz => "RAZ",
-        Rule::Rmz => "RMZ",
-        Rule::Si => "SI",
-        Rule::Tra => "TRA",
-        Rule::Tmz => "TMZ",
+impl fmt::Display for Rule {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Rule::Intense => write!(f, "INTENSE"),
+            Rule::Loa => write!(f, "LOA"),
+            Rule::NoSsr => write!(f, "NOSSR"),
+            Rule::Notam => write!(f, "NOTAM"),
+            Rule::Raz => write!(f, "RAZ"),
+            Rule::Rmz => write!(f, "RMZ"),
+            Rule::Si => write!(f, "SI"),
+            Rule::Tra => write!(f, "TRA"),
+            Rule::Tmz => write!(f, "TMZ"),
+        }
     }
 }
 
