@@ -1,9 +1,5 @@
 use crate::ExtraCategory;
-use yew::{html, Callback, Children, Component, Context, Html, Properties};
-
-pub enum Msg {
-    Click(usize),
-}
+use yew::{function_component, html, use_state, Callback, Children, Html, Properties};
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
@@ -13,80 +9,65 @@ pub struct Props {
     pub on_clear: Callback<ExtraCategory>,
 }
 
-pub struct ExtraTab {
-    active_panel: usize,
-}
+#[function_component]
+pub fn ExtraTab(props: &Props) -> Html {
+    let active_panel = use_state(|| 0);
 
-impl Component for ExtraTab {
-    type Message = Msg;
-    type Properties = Props;
+    let onclick = {
+        let active_panel = active_panel.clone();
+        move |value| active_panel.set(value)
+    };
 
-    fn create(_ctx: &Context<Self>) -> Self {
-        ExtraTab { active_panel: 0 }
-    }
+    let onclear = {
+        let category = props.categories[*active_panel];
+        let onclear = props.on_clear.clone();
+        move |_| onclear.emit(category)
+    };
 
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::Click(panel) => {
-                self.active_panel = panel;
-                true
-            }
-        }
-    }
-
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        let link = ctx.link();
-        let props = ctx.props();
-
-        let category = props.categories[self.active_panel];
-        let on_clear = props.on_clear.reform(move |_| category);
-
-        let iter = props.names.iter().zip(props.children.iter()).enumerate();
-        let panels = iter
-            .map(|(n, (name, child))| {
-                html! {
-                    <div class="card mb-4">
-                      <header class="card-header is-clickable"
-                              onclick={link.callback(move |_| Msg::Click(n))}>
-                        <level class="card-header-title">
-                          <p>{ name }</p>
-                          {
-                            if n == self.active_panel {
-                              html! {
-                                <button class="button is-link is-light is-small ml-4"
-                                        onclick={on_clear.clone()}>
-                                  {"Clear"}
-                                </button>
-                                }
-                            } else {
-                                html! ()
+    let iter = props.names.iter().zip(props.children.iter()).enumerate();
+    let panels = iter
+        .map(|(n, (name, child))| {
+            let onclick = onclick.clone();
+            html! {
+                <div class="card mb-4">
+                  <header class="card-header is-clickable" onclick={move |_| onclick(n)}>
+                    <level class="card-header-title">
+                      <p>{ name }</p>
+                      {
+                        if n == *active_panel {
+                          html! {
+                            <button class="button is-link is-light is-small ml-4" onclick={onclear.clone()}>
+                              {"Clear"}
+                            </button>
                             }
-                          }
-                        </level>
-
-                        {
-                          if n != self.active_panel {
-                              html! {
-                                <i class="card-header-icon">{ "+" }</i>
-                              }
-                          } else {
-                              html! {}
-                          }
+                        } else {
+                            html! ()
                         }
-                      </header>
+                      }
+                    </level>
 
-                      <div class="card-content" hidden={n != self.active_panel}>
-                        { child }
-                      </div>
-                    </div>
-                }
-            })
-            .collect::<Html>();
+                    {
+                      if n != *active_panel {
+                          html! {
+                            <i class="card-header-icon">{ "+" }</i>
+                          }
+                      } else {
+                          html! {}
+                      }
+                    }
+                  </header>
 
-        html! {
-            <div>
-              { panels }
-            </div>
-        }
+                  <div class="card-content" hidden={n != *active_panel}>
+                    { child }
+                  </div>
+                </div>
+            }
+        })
+        .collect::<Html>();
+
+    html! {
+        <div>
+          { panels }
+        </div>
     }
 }
