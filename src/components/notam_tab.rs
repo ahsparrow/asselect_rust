@@ -1,4 +1,4 @@
-use yew::{function_component, html};
+use yew::{function_component, html, Html};
 
 #[function_component(NotamTab)]
 pub fn notam_tab() -> Html {

@@ -8,7 +8,7 @@ use wasm_bindgen::JsCast;
 use yaixm::convert::{openair, AirType, Format, Settings};
 use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
 use yaixm::Yaixm;
-use yew::{html, Component, Context, Html};
+use yew::{html, Component, Context, Html, Renderer};
 
 mod components;
 mod yaixm;
@@ -263,5 +263,5 @@ impl Component for App {
 
 fn main() {
     wasm_logger::init(wasm_logger::Config::default());
-    yew::start_app::<App>();
+    Renderer::<App>::new().render();
 }
