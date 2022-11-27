@@ -7,7 +7,10 @@ use state::{Action, State};
 use wasm_bindgen::JsCast;
 use yaixm::convert::openair;
 use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
-use yew::{function_component, html, use_effect_with_deps, use_reducer, use_state, Callback, Html, Renderer};
+use yew::{
+    function_component, html, use_effect_with_deps, use_reducer, use_state, Callback, Html,
+    Renderer,
+};
 
 mod components;
 mod state;
@@ -47,35 +50,45 @@ fn app() -> Html {
                 });
                 || ()
             },
-            ()
+            (),
         );
     }
 
     // Callbacks
     let onairspace_set = {
         let state = state.clone();
-        Callback::from(move |setting: AirspaceSetting| state.dispatch(Action::Set { name: setting.name, value: setting.value }))
+        Callback::from(move |setting: AirspaceSetting| {
+            state.dispatch(Action::Set {
+                name: setting.name,
+                value: setting.value,
+            })
+        })
     };
 
     let onextra_clear = {
         let state = state.clone();
-        Callback::from(move |category: ExtraCategory| {
-            match category {
-                ExtraCategory::Rat => state.dispatch(Action::ClearRat),
-                ExtraCategory::Loa => state.dispatch(Action::ClearLoa),
-                ExtraCategory::Wave => state.dispatch(Action::ClearWave),
-            }
+        Callback::from(move |category: ExtraCategory| match category {
+            ExtraCategory::Rat => state.dispatch(Action::ClearRat),
+            ExtraCategory::Loa => state.dispatch(Action::ClearLoa),
+            ExtraCategory::Wave => state.dispatch(Action::ClearWave),
         })
     };
 
     let onextra_set = {
         let state = state.clone();
-        Callback::from(move |setting: ExtraSetting| {
-            match  setting.category {
-                ExtraCategory::Rat => state.dispatch(Action::SetRat { name: setting.name, checked: setting.checked}),
-                ExtraCategory::Loa => state.dispatch(Action::SetLoa { name: setting.name, checked: setting.checked}),
-                ExtraCategory::Wave => state.dispatch(Action::SetWave { name: setting.name, checked: setting.checked}),
-            }
+        Callback::from(move |setting: ExtraSetting| match setting.category {
+            ExtraCategory::Rat => state.dispatch(Action::SetRat {
+                name: setting.name,
+                checked: setting.checked,
+            }),
+            ExtraCategory::Loa => state.dispatch(Action::SetLoa {
+                name: setting.name,
+                checked: setting.checked,
+            }),
+            ExtraCategory::Wave => state.dispatch(Action::SetWave {
+                name: setting.name,
+                checked: setting.checked,
+            }),
         })
     };
 

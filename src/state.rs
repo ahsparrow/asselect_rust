@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::rc::Rc;
-use yew:: Reducible;
+use yew::Reducible;
 
 // Airspace types
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -142,8 +142,7 @@ impl Reducible for State {
                         }
                     }
                     "home" => {
-                        settings.airspace.home =
-                            if value == "None" { None } else { Some(value) }
+                        settings.airspace.home = if value == "None" { None } else { Some(value) }
                     }
                     "format" => {
                         settings.options.format = match value.as_str() {
@@ -155,21 +154,21 @@ impl Reducible for State {
                     _ => (),
                 };
             }
-            Action::SetLoa { name, checked} => {
+            Action::SetLoa { name, checked } => {
                 if checked {
                     settings.loa.replace(name);
                 } else {
                     settings.loa.remove(&name);
                 }
             }
-            Action::SetRat { name, checked} => {
+            Action::SetRat { name, checked } => {
                 if checked {
                     settings.rat.replace(name);
                 } else {
                     settings.rat.remove(&name);
                 }
             }
-            Action::SetWave { name, checked} => {
+            Action::SetWave { name, checked } => {
                 if checked {
                     settings.wave.replace(name);
                 } else {
@@ -186,9 +185,7 @@ impl Reducible for State {
                 settings.wave.clear();
             }
         }
-        Self {
-            settings,
-        }.into()
+        Self { settings }.into()
     }
 }
 

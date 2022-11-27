@@ -1,8 +1,7 @@
 use crate::state::{AirType, Format, Settings};
 use crate::yaixm::util::{format_distance, format_latlon, format_level, norm_level};
 use crate::yaixm::{
-    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, LocalType, Rule, Service,
-    Volume, Yaixm,
+    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
 };
 use std::collections::{HashMap, HashSet};
 use std::fmt;
