@@ -1,5 +1,3 @@
-#![allow(clippy::let_unit_value)] // For problem in html! macro
-
 use components::{AirspaceTab, ExtraPanel, ExtraTab, NotamTab, OptionsTab, Tabs};
 use gloo_file::{Blob, ObjectUrl};
 use gloo_utils::document;
