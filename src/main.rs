@@ -191,9 +191,7 @@ fn app() -> Html {
     };
 
     html! {
-      <>
         {yaixm_logic}
-      </>
     }
 }
 
