@@ -1,5 +1,4 @@
 use crate::state::{AirType, Format, Settings};
-use crate::yaixm::util::{format_distance, format_latlon, format_level, norm_level};
 use crate::yaixm::{
     Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
 };
@@ -31,6 +30,56 @@ impl fmt::Display for AirType {
     }
 }
 
+// Normalise all levels to flight level
+pub fn norm_level(value: &str) -> u16 {
+    if let Some(fl) = value.strip_prefix("FL") {
+        fl.parse().unwrap()
+    } else if value.ends_with(" ft") {
+        value.split(' ').next().unwrap().parse::<u16>().unwrap() / 100
+    } else {
+        0
+    }
+}
+
+// Openair level format
+pub fn format_level(level: &str) -> String {
+    if let Some(alt) = level.strip_suffix(" ft") {
+        // Altitude
+        alt.to_string() + "ALT"
+    } else {
+        // Flight level or SFC
+        level.to_string()
+    }
+}
+
+// Openair lat/lon format
+pub fn format_latlon(latlon: &str) -> String {
+    format!(
+        "{}:{}:{} {} {}:{}:{} {}",
+        &latlon[..2],
+        &latlon[2..4],
+        &latlon[4..6],
+        &latlon[6..7],
+        &latlon[8..11],
+        &latlon[11..13],
+        &latlon[13..15],
+        &latlon[15..16]
+    )
+}
+
+// Openair distance format
+pub fn format_distance(distance: &str) -> String {
+    match distance.split_once(' ') {
+        Some((dist, unit)) => {
+            if unit == "km" {
+                format!("{:.3}", dist.parse::<f32>().unwrap() / 1.852)
+            } else {
+                dist.to_string()
+            }
+        }
+        _ => "".to_string(),
+    }
+}
 // Remove unwanted feature/volume
 fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
     let exclude = match feature.local_type {
