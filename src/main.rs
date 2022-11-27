@@ -2,18 +2,17 @@
 
 use components::{AirspaceTab, ExtraPanel, ExtraTab, NotamTab, OptionsTab, Tabs};
 use gloo_file::{Blob, ObjectUrl};
-use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
+use state::{Action, State};
 use wasm_bindgen::JsCast;
-use yaixm::convert::{openair, AirType, Format, Settings};
+use yaixm::convert::openair;
 use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
-use yaixm::Yaixm;
-use yew::{html, Component, Context, Html, Renderer};
+use yew::{function_component, html, use_effect_with_deps, use_reducer, use_state, Callback, Html, Renderer};
 
 mod components;
+mod state;
 mod yaixm;
 
-// Application messages
 pub struct AirspaceSetting {
     pub name: String,
     pub value: String,
@@ -32,232 +31,158 @@ pub struct ExtraSetting {
     pub checked: bool,
 }
 
-enum Msg {
-    AirspaceSet(AirspaceSetting),
-    ExtraClear(ExtraCategory),
-    ExtraSet(ExtraSetting),
-    Save,
-    YaixmData(Yaixm),
-    YaixmError,
-}
+#[function_component(App)]
+fn app() -> Html {
+    let state = use_reducer(State::new);
+    let yaixm = use_state(|| None);
 
-// App component
-struct App {
-    yaixm: Option<Yaixm>,
-    settings: Settings,
-}
+    {
+        let yaixm = yaixm.clone();
 
-impl App {
-    fn no_yaixm_view(&self) -> Html {
-        html! {
-            <div class="section">
-              <div class="container">
-                <div class="notification is-info">
-                  <h2 class="title is-4">{"Waiting for airspace data..."}</h2>
+        use_effect_with_deps(
+            move |_| {
+                wasm_bindgen_futures::spawn_local(async move {
+                    let data = fetch_yaixm().await;
+                    yaixm.set(data.ok());
+                });
+                || ()
+            },
+            ()
+        );
+    }
+
+    // Callbacks
+    let onairspace_set = {
+        let state = state.clone();
+        Callback::from(move |setting: AirspaceSetting| state.dispatch(Action::Set { name: setting.name, value: setting.value }))
+    };
+
+    let onextra_clear = {
+        let state = state.clone();
+        Callback::from(move |category: ExtraCategory| {
+            match category {
+                ExtraCategory::Rat => state.dispatch(Action::ClearRat),
+                ExtraCategory::Loa => state.dispatch(Action::ClearLoa),
+                ExtraCategory::Wave => state.dispatch(Action::ClearWave),
+            }
+        })
+    };
+
+    let onextra_set = {
+        let state = state.clone();
+        Callback::from(move |setting: ExtraSetting| {
+            match  setting.category {
+                ExtraCategory::Rat => state.dispatch(Action::SetRat { name: setting.name, checked: setting.checked}),
+                ExtraCategory::Loa => state.dispatch(Action::SetLoa { name: setting.name, checked: setting.checked}),
+                ExtraCategory::Wave => state.dispatch(Action::SetWave { name: setting.name, checked: setting.checked}),
+            }
+        })
+    };
+
+    let onsave = {
+        let yaixm = yaixm.clone();
+        let state = state.clone();
+        Callback::from(move |_| {
+            // Save settings in local storage
+            //LocalStorage::set("settings", self.settings.clone()).unwrap();
+
+            // Create OpenAir data
+            let oa = openair(yaixm.as_ref().unwrap(), &state.settings);
+            let blob = Blob::new(oa.as_str());
+            let object_url = ObjectUrl::from(blob);
+
+            // Trigger a "fake" download to save the data
+            let download_anchor = document()
+                .get_element_by_id("download")
+                .expect("No document")
+                .dyn_into::<web_sys::HtmlAnchorElement>()
+                .expect("No anchor element");
+
+            download_anchor.set_href(&object_url);
+            download_anchor.click();
+        })
+    };
+
+    let yaixm_logic = match yaixm.as_ref() {
+        Some(yaixm) => {
+            let airspace_settings = state.settings.airspace.clone();
+            let airspace_options = state.settings.options.clone();
+
+            let mut gliding_sites = gliding_sites(yaixm);
+            gliding_sites.sort();
+
+            let rat_selected = state.settings.rat.clone();
+            let rat_names = rat_names(yaixm);
+
+            let loa_selected = state.settings.loa.clone();
+            let loa_names = loa_names(yaixm);
+
+            let wav_selected = state.settings.wave.clone();
+            let mut wav_names = wav_names(yaixm);
+            wav_names.sort();
+
+            let extra_names = vec![
+                "Temporary Restrictions, RA(T)".to_string(),
+                "Local Agreements".to_string(),
+                "Wave Boxes".to_string(),
+            ];
+
+            let tab_names = vec![
+                "Main".to_string(),
+                "Options".to_string(),
+                "Extra".to_string(),
+                "NOTAM".to_string(),
+            ];
+
+            html! {
+                <>
+                <div class="hero is-small is-primary">
+                  <div class="hero-body py-2">
+                    <p class="subtitle is-4">
+                      {"ASSelect - UK Airspace"}
+                    </p>
+                  </div>
+                </div>
+                <div class="container">
+                  <Tabs {tab_names}>
+                    <AirspaceTab settings={airspace_settings} {gliding_sites} callback={onairspace_set.clone()} />
+                    <OptionsTab options={airspace_options} callback={onairspace_set.clone()} />
+                    <ExtraTab names={extra_names} categories={vec![ExtraCategory::Rat, ExtraCategory::Loa, ExtraCategory::Wave]} on_clear={onextra_clear.clone()}>
+                      <ExtraPanel category={ExtraCategory::Rat} names={rat_names} selected={rat_selected} callback={onextra_set.clone()}/>
+                      <ExtraPanel category={ExtraCategory::Loa} names={loa_names} selected={loa_selected} callback={onextra_set.clone()}/>
+                      <ExtraPanel category={ExtraCategory::Wave} names={wav_names} selected={wav_selected} callback={onextra_set.clone()}/>
+                    </ExtraTab>
+                    <NotamTab />
+                  </Tabs>
+                </div>
+                <div class="container">
+                  <div class="ml-4 mt-4">
+                    <button class="button is-primary" onclick={onsave}>
+                      {"Save"}
+                    </button>
+                    <a id="download" hidden=true download="openair.txt">{"Download"}</a>
+                  </div>
+                </div>
+                </>
+            }
+        }
+        None => {
+            html! {
+              <div class="section">
+                <div class="container">
+                  <div class="notification is-info">
+                    <h2 class="title is-4">{"Waiting for airspace data..."}</h2>
+                  </div>
                 </div>
               </div>
-            </div>
-        }
-    }
-
-    fn yaixm_view(&self, ctx: &Context<Self>, yaixm: &Yaixm) -> Html {
-        let airspace_callback = ctx.link().callback(Msg::AirspaceSet);
-        let extra_callback = ctx.link().callback(Msg::ExtraSet);
-        let save_callback = ctx.link().callback(|_| Msg::Save);
-
-        let airspace_settings = self.settings.airspace.clone();
-        let airspace_options = self.settings.options.clone();
-
-        let mut gliding_sites = gliding_sites(yaixm);
-        gliding_sites.sort();
-
-        let rat_selected = self.settings.rat.clone();
-        let rat_names = rat_names(yaixm);
-
-        let loa_selected = self.settings.loa.clone();
-        let loa_names = loa_names(yaixm);
-
-        let wav_selected = self.settings.wave.clone();
-        let mut wav_names = wav_names(yaixm);
-        wav_names.sort();
-
-        let extra_names = vec![
-            "Temporary Restrictions, RA(T)".to_string(),
-            "Local Agreements".to_string(),
-            "Wave Boxes".to_string(),
-        ];
-
-        let tab_names = vec![
-            "Main".to_string(),
-            "Options".to_string(),
-            "Extra".to_string(),
-            "NOTAM".to_string(),
-        ];
-
-        let on_clear = ctx.link().callback(Msg::ExtraClear);
-
-        html! {
-            <>
-            <div class="hero is-small is-primary">
-              <div class="hero-body py-2">
-                <p class="subtitle is-4">
-                  {"ASSelect - UK Airspace"}
-                </p>
-              </div>
-            </div>
-            <div class="container">
-              <Tabs {tab_names}>
-                <AirspaceTab settings={airspace_settings} {gliding_sites} callback={airspace_callback.clone()} />
-                <OptionsTab options={airspace_options} callback={airspace_callback.clone()} />
-                <ExtraTab names={extra_names} categories={vec![ExtraCategory::Rat, ExtraCategory::Loa, ExtraCategory::Wave]} on_clear={on_clear.clone()}>
-                  <ExtraPanel category={ExtraCategory::Rat} names={rat_names} selected={rat_selected} callback={extra_callback.clone()}/>
-                  <ExtraPanel category={ExtraCategory::Loa} names={loa_names} selected={loa_selected} callback={extra_callback.clone()}/>
-                  <ExtraPanel category={ExtraCategory::Wave} names={wav_names} selected={wav_selected} callback={extra_callback.clone()}/>
-                </ExtraTab>
-                <NotamTab />
-              </Tabs>
-            </div>
-            <div class="container">
-              <div class="ml-4 mt-4">
-                <button class="button is-primary" onclick={save_callback}>
-                  {"Save"}
-                </button>
-                <a id="download" hidden=true download="openair.txt">{"Download"}</a>
-              </div>
-            </div>
-            </>
-        }
-    }
-
-    fn save(&self) {
-        // Save settings in local storage
-        LocalStorage::set("settings", self.settings.clone()).unwrap();
-
-        // Create OpenAir data
-        let oa = openair(self.yaixm.as_ref().unwrap(), &self.settings);
-        let blob = Blob::new(oa.as_str());
-        let object_url = ObjectUrl::from(blob);
-
-        // Trigger a "fake" download to save the data
-        let download_anchor = document()
-            .get_element_by_id("download")
-            .expect("No document")
-            .dyn_into::<web_sys::HtmlAnchorElement>()
-            .expect("No anchor element");
-
-        download_anchor.set_href(&object_url);
-        download_anchor.click();
-    }
-}
-
-fn default_set(value: &str) -> Option<AirType> {
-    match value {
-        "classf" => Some(AirType::F),
-        "classg" => Some(AirType::G),
-        "danger" => Some(AirType::Q),
-        "restricted" => Some(AirType::R),
-        "gsec" => Some(AirType::W),
-        _ => None,
-    }
-}
-
-impl Component for App {
-    type Message = Msg;
-    type Properties = ();
-
-    fn create(ctx: &Context<Self>) -> Self {
-        // Fetch YAIXM airspace data
-        ctx.link().send_future(async {
-            match fetch_yaixm().await {
-                Ok(yaixm) => Msg::YaixmData(yaixm),
-                Err(_err) => Msg::YaixmError,
-            }
-        });
-
-        Self {
-            yaixm: None,
-            settings: LocalStorage::get("settings").unwrap_or_default(),
-        }
-    }
-
-    fn update(&mut self, _ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::YaixmData(yaixm) => {
-                self.yaixm = Some(yaixm);
-                true
-            }
-            Msg::YaixmError => {
-                log::error!("Can't fetch YAIXM data");
-                false
-            }
-            Msg::AirspaceSet(setting) => {
-                let value = setting.value;
-                match setting.name.as_str() {
-                    "ils" => self.settings.airspace.ils = default_set(&value),
-                    "unlicensed" => self.settings.airspace.unlicensed = default_set(&value),
-                    "microlight" => self.settings.airspace.microlight = default_set(&value),
-                    "gliding" => self.settings.airspace.gliding = default_set(&value),
-                    "hirta_gvs" => self.settings.airspace.hirta_gvs = default_set(&value),
-                    "obstacle" => self.settings.airspace.obstacle = value == "include",
-                    "max_level" => self.settings.options.max_level = value.parse::<u16>().unwrap(),
-                    "radio" => self.settings.options.radio = value == "yes",
-                    "north" => self.settings.options.north = value.parse::<f64>().unwrap(),
-                    "south" => self.settings.options.south = value.parse::<f64>().unwrap(),
-                    "atz" => {
-                        self.settings.airspace.atz = match value.as_str() {
-                            "classd" => AirType::D,
-                            _ => AirType::Ctr,
-                        }
-                    }
-                    "home" => {
-                        self.settings.airspace.home =
-                            if value == "None" { None } else { Some(value) }
-                    }
-                    "format" => {
-                        self.settings.options.format = match value.as_str() {
-                            "ratonly" => Format::RatOnly,
-                            "competition" => Format::Competition,
-                            _ => Format::OpenAir,
-                        }
-                    }
-                    _ => (),
-                }
-                true
-            }
-            Msg::ExtraClear(category) => {
-                match category {
-                    ExtraCategory::Rat => self.settings.rat.clear(),
-                    ExtraCategory::Loa => self.settings.loa.clear(),
-                    ExtraCategory::Wave => self.settings.wave.clear(),
-                }
-                true
-            }
-            Msg::ExtraSet(setting) => {
-                let set = match setting.category {
-                    ExtraCategory::Rat => &mut self.settings.rat,
-                    ExtraCategory::Loa => &mut self.settings.loa,
-                    ExtraCategory::Wave => &mut self.settings.wave,
-                };
-
-                if setting.checked {
-                    set.replace(setting.name);
-                } else {
-                    set.remove(&setting.name);
-                }
-                true
-            }
-            Msg::Save => {
-                self.save();
-                false
             }
         }
-    }
+    };
 
-    fn view(&self, ctx: &Context<Self>) -> Html {
-        match self.yaixm.as_ref() {
-            Some(yaixm) => self.yaixm_view(ctx, yaixm),
-            None => self.no_yaixm_view(),
-        }
+    html! {
+      <>
+        {yaixm_logic}
+      </>
     }
 }
 

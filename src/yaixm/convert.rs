@@ -1,119 +1,33 @@
+use crate::state::{AirType, Format, Settings};
 use crate::yaixm::util::{format_distance, format_latlon, format_level, norm_level};
 use crate::yaixm::{
     Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, LocalType, Rule, Service,
     Volume, Yaixm,
 };
-use serde::{Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fmt;
 
-// Settings
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub enum AirType {
-    A,
-    B,
-    C,
-    D,
-    E,
-    F,
-    G,
-    P,
-    Q,
-    R,
-    W,
-    Cta,
-    Ctr,
-    Matz,
-    Other,
-    Rmz,
-    Tmz,
-}
-
+// Convert AirType to Openair type string
 impl fmt::Display for AirType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            AirType::A => write!(f, "A"),
-            AirType::B => write!(f, "B"),
-            AirType::C => write!(f, "C"),
-            AirType::D => write!(f, "D"),
-            AirType::E => write!(f, "E"),
-            AirType::F => write!(f, "F"),
-            AirType::G => write!(f, "G"),
-            AirType::P => write!(f, "P"),
-            AirType::Q => write!(f, "Q"),
-            AirType::R => write!(f, "R"),
-            AirType::W => write!(f, "W"),
+            AirType::ClassA => write!(f, "A"),
+            AirType::ClassB => write!(f, "B"),
+            AirType::ClassC => write!(f, "C"),
+            AirType::ClassD => write!(f, "D"),
+            AirType::ClassE => write!(f, "E"),
+            AirType::ClassF => write!(f, "F"),
+            AirType::ClassG => write!(f, "G"),
+            AirType::Prohibited => write!(f, "P"),
+            AirType::Danger => write!(f, "Q"),
+            AirType::Restricted => write!(f, "R"),
+            AirType::Gliding => write!(f, "W"),
             AirType::Cta => write!(f, "CTA"),
             AirType::Ctr => write!(f, "CTR"),
             AirType::Matz => write!(f, "MATZ"),
             AirType::Other => write!(f, "OTHER"),
             AirType::Rmz => write!(f, "RMZ"),
             AirType::Tmz => write!(f, "RMZ"),
-        }
-    }
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub enum Format {
-    OpenAir,
-    RatOnly,
-    Competition,
-}
-
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-pub struct Airspace {
-    pub atz: AirType,
-    pub ils: Option<AirType>,
-    pub unlicensed: Option<AirType>,
-    pub microlight: Option<AirType>,
-    pub gliding: Option<AirType>,
-    pub home: Option<String>,
-    pub hirta_gvs: Option<AirType>,
-    pub obstacle: bool,
-}
-
-#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
-pub struct Options {
-    pub max_level: u16,
-    pub radio: bool,
-    pub north: f64,
-    pub south: f64,
-    pub format: Format,
-}
-
-#[derive(Clone, Debug, Default, Deserialize, PartialEq, Serialize)]
-pub struct Settings {
-    pub airspace: Airspace,
-    pub options: Options,
-    pub loa: HashSet<String>,
-    pub rat: HashSet<String>,
-    pub wave: HashSet<String>,
-}
-
-// Setting defaults
-impl Default for Airspace {
-    fn default() -> Self {
-        Airspace {
-            atz: AirType::Ctr,
-            ils: None,
-            unlicensed: None,
-            microlight: None,
-            gliding: None,
-            home: None,
-            hirta_gvs: None,
-            obstacle: false,
-        }
-    }
-}
-
-impl Default for Options {
-    fn default() -> Self {
-        Options {
-            max_level: 600,
-            radio: false,
-            north: 59.0,
-            south: 49.0,
-            format: Format::OpenAir,
         }
     }
 }

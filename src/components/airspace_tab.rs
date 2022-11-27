@@ -1,5 +1,5 @@
-use crate::yaixm::convert::{AirType, Airspace};
 use crate::AirspaceSetting;
+use crate::state::{AirType, Airspace};
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, Callback, Event, Html, Properties, TargetCast};
 
@@ -44,7 +44,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="atz" onchange={onchange.clone()}>
-                      <option value="classd" selected={set.atz == AirType::D}>{"Class D"}</option>
+                      <option value="classd" selected={set.atz == AirType::ClassD}>{"Class D"}</option>
                       <option value="ctr" selected={set.atz == AirType::Ctr}>{"Control Zone"}</option>
                     </select>
                   </div>
@@ -59,8 +59,8 @@ pub fn airspace_tab(props: &Props) -> Html {
                   <div class="select is-fullwidth">
                     <select name="ils" onchange={onchange.clone()}>
                       <option value="atz" selected={set.ils == None}>{"As ATZ"}</option>
-                      <option value="classf" selected={set.ils == Some(AirType::F)}>{"Class F"}</option>
-                      <option value="classg" selected={set.ils == Some(AirType::G)}>{"Class G"}</option>
+                      <option value="classf" selected={set.ils == Some(AirType::ClassF)}>{"Class F"}</option>
+                      <option value="classg" selected={set.ils == Some(AirType::ClassG)}>{"Class G"}</option>
                     </select>
                   </div>
                 </div>
@@ -77,8 +77,8 @@ pub fn airspace_tab(props: &Props) -> Html {
                   <div class="select is-fullwidth">
                     <select name="unlicensed" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.unlicensed == None}>{"Exclude"}</option>
-                      <option value="classf" selected={set.unlicensed == Some(AirType::F)}>{"Class F"}</option>
-                      <option value="classg" selected={set.unlicensed == Some(AirType::G)}>{"Class G"}</option>
+                      <option value="classf" selected={set.unlicensed == Some(AirType::ClassF)}>{"Class F"}</option>
+                      <option value="classg" selected={set.unlicensed == Some(AirType::ClassG)}>{"Class G"}</option>
                     </select>
                   </div>
                 </div>
@@ -92,8 +92,8 @@ pub fn airspace_tab(props: &Props) -> Html {
                   <div class="select is-fullwidth">
                     <select name="microlight" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.microlight == None}>{"Exclude"}</option>
-                      <option value="classf" selected={set.microlight == Some(AirType::F)}>{"Class F"}</option>
-                      <option value="classg" selected={set.microlight == Some(AirType::G)}>{"Class G"}</option>
+                      <option value="classf" selected={set.microlight == Some(AirType::ClassF)}>{"Class F"}</option>
+                      <option value="classg" selected={set.microlight == Some(AirType::ClassG)}>{"Class G"}</option>
                     </select>
                   </div>
                 </div>
@@ -110,9 +110,9 @@ pub fn airspace_tab(props: &Props) -> Html {
                   <div class="select is-fullwidth">
                     <select name="gliding" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.gliding == None}>{"Exclude"}</option>
-                      <option value="gsec" selected={set.gliding == Some(AirType::W)}>{"Gliding Sector"}</option>
-                      <option value="classf" selected={set.gliding == Some(AirType::F)}>{"Class F"}</option>
-                      <option value="classg" selected={set.gliding == Some(AirType::G)}>{"Class G"}</option>
+                      <option value="gsec" selected={set.gliding == Some(AirType::Gliding)}>{"Gliding Sector"}</option>
+                      <option value="classf" selected={set.gliding == Some(AirType::ClassF)}>{"Class F"}</option>
+                      <option value="classg" selected={set.gliding == Some(AirType::ClassG)}>{"Class G"}</option>
                     </select>
                   </div>
                 </div>
@@ -143,8 +143,8 @@ pub fn airspace_tab(props: &Props) -> Html {
                   <div class="select is-fullwidth">
                     <select name="hirta_gvs" onchange={onchange.clone()}>
                       <option value="exclude" selected={set.hirta_gvs == None}>{"Exclude"}</option>
-                      <option value="danger" selected={set.hirta_gvs == Some(AirType::Q)}>{"Danger"}</option>
-                      <option value="restricted" selected={set.hirta_gvs == Some(AirType::R)}>{"Restricted"}</option>
+                      <option value="danger" selected={set.hirta_gvs == Some(AirType::Danger)}>{"Danger"}</option>
+                      <option value="restricted" selected={set.hirta_gvs == Some(AirType::Restricted)}>{"Restricted"}</option>
                     </select>
                   </div>
                 </div>
