@@ -3,29 +3,76 @@ use crate::yaixm::{
     Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
 };
 use std::collections::{HashMap, HashSet};
-use std::fmt;
 
-// Convert AirType to Openair type string
-impl fmt::Display for AirType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+impl IcaoClass {
+    fn to_str(&self) -> &'static str {
         match self {
-            AirType::ClassA => write!(f, "A"),
-            AirType::ClassB => write!(f, "B"),
-            AirType::ClassC => write!(f, "C"),
-            AirType::ClassD => write!(f, "D"),
-            AirType::ClassE => write!(f, "E"),
-            AirType::ClassF => write!(f, "F"),
-            AirType::ClassG => write!(f, "G"),
-            AirType::Prohibited => write!(f, "P"),
-            AirType::Danger => write!(f, "Q"),
-            AirType::Restricted => write!(f, "R"),
-            AirType::Gliding => write!(f, "W"),
-            AirType::Cta => write!(f, "CTA"),
-            AirType::Ctr => write!(f, "CTR"),
-            AirType::Matz => write!(f, "MATZ"),
-            AirType::Other => write!(f, "OTHER"),
-            AirType::Rmz => write!(f, "RMZ"),
-            AirType::Tmz => write!(f, "RMZ"),
+            IcaoClass::A => "A",
+            IcaoClass::B => "B",
+            IcaoClass::C => "C",
+            IcaoClass::D => "D",
+            IcaoClass::E => "E",
+            IcaoClass::F => "F",
+            IcaoClass::G => "G",
+        }
+    }
+}
+
+impl LocalType {
+    fn to_str(&self) -> &'static str {
+        match self {
+            LocalType::Dz => "DZ",
+            LocalType::Glider => "GLIDER",
+            LocalType::Gvs => "GVS",
+            LocalType::Hirta => "HIRTA",
+            LocalType::Ils => "ILS",
+            LocalType::Laser => "LASER",
+            LocalType::Matz => "MATZ",
+            LocalType::NoAtz => "NOATZ",
+            LocalType::Rat => "RAT",
+            LocalType::Rmz => "RMZ",
+            LocalType::Ul => "UL",
+            LocalType::Tmz => "TMZ",
+        }
+    }
+}
+
+impl Rule {
+    fn to_str(&self) -> &'static str {
+        match self {
+            Rule::Intense => "INTENSE",
+            Rule::Loa => "LOA",
+            Rule::NoSsr => "NOSSR",
+            Rule::Notam => "NOTAM",
+            Rule::Raz => "RAZ",
+            Rule::Rmz => "RMZ",
+            Rule::Si => "SI",
+            Rule::Tra => "TRA",
+            Rule::Tmz => "TMZ",
+        }
+    }
+}
+
+impl AirType {
+    fn to_str(&self) -> &'static str {
+        match self {
+            AirType::ClassA => "A",
+            AirType::ClassB => "B",
+            AirType::ClassC => "C",
+            AirType::ClassD => "D",
+            AirType::ClassE => "E",
+            AirType::ClassF => "F",
+            AirType::ClassG => "G",
+            AirType::Prohibited => "P",
+            AirType::Danger => "Q",
+            AirType::Restricted => "R",
+            AirType::Gliding => "W",
+            AirType::Cta => "CTA",
+            AirType::Ctr => "CTR",
+            AirType::Matz => "MATZ",
+            AirType::Other => "OTHER",
+            AirType::Rmz => "RMZ",
+            AirType::Tmz => "RMZ",
         }
     }
 }
@@ -131,7 +178,7 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
         | Some(LocalType::Laser) = feature.local_type
         {
             name.push(' ');
-            name += feature.local_type.unwrap().to_string().as_str();
+            name += feature.local_type.unwrap().to_str();
         } else if feature.icao_type == IcaoType::Atz {
             name += " ATZ";
         } else if rules.contains(&Rule::Raz) {
@@ -157,7 +204,7 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
         let mut qualifiers = rules
             .into_iter()
             .filter(|&x| *x == Rule::Si || *x == Rule::Notam)
-            .map(|x| x.to_string())
+            .map(|x| x.to_str().to_string())
             .collect::<Vec<String>>();
 
         if !qualifiers.is_empty() {
@@ -182,33 +229,6 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
 
 // Give each volume a type
 fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
-    let atz = settings.airspace.atz.to_string();
-    let ul = settings
-        .airspace
-        .microlight
-        .unwrap_or(AirType::Other)
-        .to_string();
-    let ils = settings
-        .airspace
-        .ils
-        .unwrap_or(settings.airspace.atz)
-        .to_string();
-    let noatz = settings
-        .airspace
-        .unlicensed
-        .unwrap_or(AirType::Other)
-        .to_string();
-    let gliding = settings
-        .airspace
-        .gliding
-        .unwrap_or(AirType::Other)
-        .to_string();
-    let hirta_gvs = settings
-        .airspace
-        .hirta_gvs
-        .unwrap_or(AirType::Other)
-        .to_string();
-
     let rules = feature
         .rules
         .iter()
@@ -218,18 +238,12 @@ fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
 
     let comp = settings.options.format == Format::Competition;
 
-    let volume_class = volume
-        .icao_class
-        .or(feature.icao_class)
-        .unwrap_or(IcaoClass::G)
-        .to_string();
-
     let openair_type = if rules.contains(&Rule::Notam) {
         // NOTAM activated airspace
         "G"
     } else {
         match feature.icao_type {
-            IcaoType::Atz => atz.as_str(),
+            IcaoType::Atz => settings.airspace.atz.to_str(),
             IcaoType::D => {
                 if comp && rules.contains(&Rule::Si) {
                     // Danger area with SI
@@ -249,7 +263,11 @@ fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
                 } else {
                     match feature.local_type {
                         Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) => {
-                            hirta_gvs.as_str()
+                            settings
+                                .airspace
+                                .hirta_gvs
+                                .unwrap_or(AirType::Other)
+                                .to_str()
                         }
                         Some(LocalType::Glider) => "W",
                         _ => "Q",
@@ -261,15 +279,27 @@ fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
                     if rules.contains(&Rule::Loa) {
                         "W"
                     } else {
-                        gliding.as_str()
+                        settings.airspace.gliding.unwrap_or(AirType::Other).to_str()
                     }
                 }
-                Some(LocalType::Ils) => ils.as_str(),
+                Some(LocalType::Ils) => settings
+                    .airspace
+                    .ils
+                    .unwrap_or(settings.airspace.atz)
+                    .to_str(),
                 Some(LocalType::Matz) => "MATZ",
-                Some(LocalType::NoAtz) => noatz.as_str(),
+                Some(LocalType::NoAtz) => settings
+                    .airspace
+                    .unlicensed
+                    .unwrap_or(AirType::Other)
+                    .to_str(),
                 Some(LocalType::Rat) => "P",
                 Some(LocalType::Tmz) => "TMZ",
-                Some(LocalType::Ul) => ul.as_str(),
+                Some(LocalType::Ul) => settings
+                    .airspace
+                    .microlight
+                    .unwrap_or(AirType::Other)
+                    .to_str(),
                 Some(LocalType::Rmz) => "RMZ",
                 _ => "OTHER",
             },
@@ -281,7 +311,11 @@ fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
                 } else if rules.contains(&Rule::Rmz) {
                     "RMZ"
                 } else {
-                    volume_class.as_str()
+                    volume
+                        .icao_class
+                        .or(feature.icao_class)
+                        .unwrap_or(IcaoClass::G)
+                        .to_str()
                 }
             }
         }

@@ -1,6 +1,5 @@
 use serde::Deserialize;
 use std::collections::HashSet;
-use std::fmt;
 
 pub mod convert;
 pub mod util;
@@ -16,22 +15,7 @@ pub enum IcaoClass {
     G,
 }
 
-impl fmt::Display for IcaoClass {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            IcaoClass::A => write!(f, "A"),
-            IcaoClass::B => write!(f, "B"),
-            IcaoClass::C => write!(f, "C"),
-            IcaoClass::D => write!(f, "D"),
-            IcaoClass::E => write!(f, "E"),
-            IcaoClass::F => write!(f, "F"),
-            IcaoClass::G => write!(f, "G"),
-        }
-    }
-}
-
 #[derive(Clone, Copy, Deserialize, Eq, PartialEq, Debug)]
-#[allow(nonstandard_style)]
 pub enum IcaoType {
     #[serde(rename = "ATZ")]
     Atz,
@@ -80,25 +64,6 @@ pub enum LocalType {
     Tmz,
 }
 
-impl fmt::Display for LocalType {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            LocalType::Dz => write!(f, "DZ"),
-            LocalType::Glider => write!(f, "GLIDER"),
-            LocalType::Gvs => write!(f, "GVS"),
-            LocalType::Hirta => write!(f, "HIRTA"),
-            LocalType::Ils => write!(f, "ILS"),
-            LocalType::Laser => write!(f, "LASER"),
-            LocalType::Matz => write!(f, "MATZ"),
-            LocalType::NoAtz => write!(f, "NOATZ"),
-            LocalType::Rat => write!(f, "RAT"),
-            LocalType::Rmz => write!(f, "RMZ"),
-            LocalType::Ul => write!(f, "UL"),
-            LocalType::Tmz => write!(f, "TMZ"),
-        }
-    }
-}
-
 #[derive(Clone, Copy, Deserialize, Debug, Eq, Hash, PartialEq)]
 pub enum Rule {
     #[serde(rename = "INTENSE")]
@@ -119,22 +84,6 @@ pub enum Rule {
     Tra,
     #[serde(rename = "TMZ")]
     Tmz,
-}
-
-impl fmt::Display for Rule {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Rule::Intense => write!(f, "INTENSE"),
-            Rule::Loa => write!(f, "LOA"),
-            Rule::NoSsr => write!(f, "NOSSR"),
-            Rule::Notam => write!(f, "NOTAM"),
-            Rule::Raz => write!(f, "RAZ"),
-            Rule::Rmz => write!(f, "RMZ"),
-            Rule::Si => write!(f, "SI"),
-            Rule::Tra => write!(f, "TRA"),
-            Rule::Tmz => write!(f, "TMZ"),
-        }
-    }
 }
 
 #[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
