@@ -1,4 +1,5 @@
 use gloo_file::{Blob, ObjectUrl};
+use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
 use wasm_bindgen::JsCast;
 use yew::{
@@ -36,7 +37,7 @@ pub struct ExtraSetting {
 
 #[function_component(App)]
 fn app() -> Html {
-    let state = use_reducer(State::new);
+    let state = use_reducer(|| State{ settings: LocalStorage::get("settings").unwrap_or_default()});
     let yaixm = use_state(|| None);
 
     // Fetch YAIXM data
@@ -101,7 +102,7 @@ fn app() -> Html {
         let state = state.clone();
         Callback::from(move |_| {
             // Save settings in local storage
-            //LocalStorage::set("settings", self.settings.clone()).unwrap();
+            LocalStorage::set("settings", &state.settings).ok();
 
             // Create OpenAir data
             let oa = openair(yaixm.as_ref().unwrap(), &state.settings);

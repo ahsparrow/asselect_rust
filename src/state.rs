@@ -99,12 +99,6 @@ pub struct State {
     pub settings: Settings,
 }
 
-impl State {
-    pub fn new() -> Self {
-        Default::default()
-    }
-}
-
 // State actions
 pub enum Action {
     Set { name: String, value: String },
