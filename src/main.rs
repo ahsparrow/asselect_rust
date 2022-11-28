@@ -1,19 +1,21 @@
-use components::{AirspaceTab, ExtraPanel, ExtraTab, NotamTab, OptionsTab, Tabs};
 use gloo_file::{Blob, ObjectUrl};
 use gloo_utils::document;
-use state::{Action, State};
 use wasm_bindgen::JsCast;
-use yaixm::convert::openair;
-use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
 use yew::{
     function_component, html, use_effect_with_deps, use_reducer, use_state, Callback, Html,
     Renderer,
 };
 
+use components::{AirspaceTab, ExtraPanel, ExtraTab, NotamTab, OptionsTab, Tabs};
+use state::{Action, State};
+use yaixm::convert::openair;
+use yaixm::util::{fetch_yaixm, gliding_sites, loa_names, rat_names, wav_names};
+
 mod components;
 mod state;
 mod yaixm;
 
+// Callback data structures
 pub struct AirspaceSetting {
     pub name: String,
     pub value: String,
@@ -37,6 +39,7 @@ fn app() -> Html {
     let state = use_reducer(State::new);
     let yaixm = use_state(|| None);
 
+    // Fetch YAIXM data
     {
         let yaixm = yaixm.clone();
 
@@ -52,7 +55,7 @@ fn app() -> Html {
         );
     }
 
-    // Callbacks
+    // Airspace settings callback
     let onairspace_set = {
         let state = state.clone();
         Callback::from(move |setting: AirspaceSetting| {
@@ -63,15 +66,7 @@ fn app() -> Html {
         })
     };
 
-    let onextra_clear = {
-        let state = state.clone();
-        Callback::from(move |category: ExtraCategory| match category {
-            ExtraCategory::Rat => state.dispatch(Action::ClearRat),
-            ExtraCategory::Loa => state.dispatch(Action::ClearLoa),
-            ExtraCategory::Wave => state.dispatch(Action::ClearWave),
-        })
-    };
-
+    // RAT/LOA/Wave setting callback
     let onextra_set = {
         let state = state.clone();
         Callback::from(move |setting: ExtraSetting| match setting.category {
@@ -90,6 +85,17 @@ fn app() -> Html {
         })
     };
 
+    // RAT/LOA/Wave clear callback
+    let onextra_clear = {
+        let state = state.clone();
+        Callback::from(move |category: ExtraCategory| match category {
+            ExtraCategory::Rat => state.dispatch(Action::ClearRat),
+            ExtraCategory::Loa => state.dispatch(Action::ClearLoa),
+            ExtraCategory::Wave => state.dispatch(Action::ClearWave),
+        })
+    };
+
+    // Airspace file save callback
     let onsave = {
         let yaixm = yaixm.clone();
         let state = state.clone();
@@ -114,7 +120,9 @@ fn app() -> Html {
         })
     };
 
-    let yaixm_logic = match yaixm.as_ref() {
+    // HTML rendering
+    let html_logic = match yaixm.as_ref() {
+        // Render full interface if YAIXM data is available
         Some(yaixm) => {
             let airspace_settings = state.settings.airspace.clone();
             let airspace_options = state.settings.options.clone();
@@ -177,6 +185,7 @@ fn app() -> Html {
                 </>
             }
         }
+        // Waiting for YAIXM data
         None => {
             html! {
               <div class="section">
@@ -191,11 +200,11 @@ fn app() -> Html {
     };
 
     html! {
-        {yaixm_logic}
+        {html_logic}
     }
 }
 
 fn main() {
-    wasm_logger::init(wasm_logger::Config::default());
+    //wasm_logger::init(wasm_logger::Config::default());
     Renderer::<App>::new().render();
 }
