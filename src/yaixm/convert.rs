@@ -78,7 +78,7 @@ impl AirType {
 }
 
 // Normalise all levels to flight level
-pub fn norm_level(value: &str) -> u16 {
+fn norm_level(value: &str) -> u16 {
     if let Some(fl) = value.strip_prefix("FL") {
         fl.parse().unwrap()
     } else if value.ends_with(" ft") {
@@ -89,7 +89,7 @@ pub fn norm_level(value: &str) -> u16 {
 }
 
 // Openair level format
-pub fn format_level(level: &str) -> String {
+fn format_level(level: &str) -> String {
     if let Some(alt) = level.strip_suffix(" ft") {
         // Altitude
         alt.to_string() + "ALT"
@@ -100,7 +100,7 @@ pub fn format_level(level: &str) -> String {
 }
 
 // Openair lat/lon format
-pub fn format_latlon(latlon: &str) -> String {
+fn format_latlon(latlon: &str) -> String {
     format!(
         "{}:{}:{} {} {}:{}:{} {}",
         &latlon[..2],
@@ -115,7 +115,7 @@ pub fn format_latlon(latlon: &str) -> String {
 }
 
 // Openair distance format
-pub fn format_distance(distance: &str) -> String {
+fn format_distance(distance: &str) -> String {
     match distance.split_once(' ') {
         Some((dist, unit)) => {
             if unit == "km" {
