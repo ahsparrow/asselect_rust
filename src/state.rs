@@ -117,35 +117,32 @@ pub enum Action {
 }
 
 impl Reducible for State {
-    // Reducer Action type
     type Action = Action;
 
-    // Reducer Function
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
-        let mut settings = self.settings.clone();
+        let mut set = self.settings.clone();
         match action {
+            // Set airspace option
             Action::Set { name, value } => {
                 match name.as_str() {
-                    "unlicensed" => settings.airspace.unlicensed = default_set(value.as_str()),
-                    "microlight" => settings.airspace.microlight = default_set(value.as_str()),
-                    "gliding" => settings.airspace.gliding = default_set(value.as_str()),
-                    "hirta_gvs" => settings.airspace.hirta_gvs = default_set(value.as_str()),
-                    "obstacle" => settings.airspace.obstacle = value == "include",
-                    "max_level" => settings.options.max_level = value.parse::<u16>().unwrap(),
-                    "radio" => settings.options.radio = value == "yes",
-                    "north" => settings.options.north = value.parse::<f64>().unwrap(),
-                    "south" => settings.options.south = value.parse::<f64>().unwrap(),
+                    "unlicensed" => set.airspace.unlicensed = default_set(value.as_str()),
+                    "microlight" => set.airspace.microlight = default_set(value.as_str()),
+                    "gliding" => set.airspace.gliding = default_set(value.as_str()),
+                    "hirta_gvs" => set.airspace.hirta_gvs = default_set(value.as_str()),
+                    "obstacle" => set.airspace.obstacle = value == "include",
+                    "max_level" => set.options.max_level = value.parse::<u16>().unwrap(),
+                    "radio" => set.options.radio = value == "yes",
+                    "north" => set.options.north = value.parse::<f64>().unwrap(),
+                    "south" => set.options.south = value.parse::<f64>().unwrap(),
                     "atz" => {
-                        settings.airspace.atz = match value.as_str() {
+                        set.airspace.atz = match value.as_str() {
                             "classd" => AirType::ClassD,
                             _ => AirType::Ctr,
                         }
                     }
-                    "home" => {
-                        settings.airspace.home = if value == "None" { None } else { Some(value) }
-                    }
+                    "home" => set.airspace.home = if value == "None" { None } else { Some(value) },
                     "format" => {
-                        settings.options.format = match value.as_str() {
+                        set.options.format = match value.as_str() {
                             "ratonly" => Format::RatOnly,
                             "competition" => Format::Competition,
                             _ => Format::OpenAir,
@@ -154,42 +151,48 @@ impl Reducible for State {
                     _ => (),
                 };
             }
+            // Include/exclude LOA
             Action::SetLoa { name, checked } => {
                 if checked {
-                    settings.loa.replace(name);
+                    set.loa.replace(name);
                 } else {
-                    settings.loa.remove(&name);
+                    set.loa.remove(&name);
                 }
             }
+            // Include/exclude RAT
             Action::SetRat { name, checked } => {
                 if checked {
-                    settings.rat.replace(name);
+                    set.rat.replace(name);
                 } else {
-                    settings.rat.remove(&name);
+                    set.rat.remove(&name);
                 }
             }
+            // Include/exclude wave box
             Action::SetWave { name, checked } => {
                 if checked {
-                    settings.wave.replace(name);
+                    set.wave.replace(name);
                 } else {
-                    settings.wave.remove(&name);
+                    set.wave.remove(&name);
                 }
             }
+            // Clear all LOAs
             Action::ClearLoa => {
-                settings.loa.clear();
+                set.loa.clear();
             }
+            // Clear all RATs
             Action::ClearRat => {
-                settings.rat.clear();
+                set.rat.clear();
             }
+            // Clear all Wave boxes
             Action::ClearWave => {
-                settings.wave.clear();
+                set.wave.clear();
             }
         }
-        Self { settings }.into()
+        Self { settings: set }.into()
     }
 }
 
-// Helper function
+// Default mapping value to airspace type
 fn default_set(value: &str) -> Option<AirType> {
     match value {
         "classf" => Some(AirType::ClassF),
