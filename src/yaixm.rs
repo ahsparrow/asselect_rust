@@ -86,13 +86,13 @@ pub enum Rule {
     Tmz,
 }
 
-#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct Circle {
     pub centre: String,
     pub radius: String,
 }
 
-#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct Arc {
     pub centre: String,
     pub dir: String,
@@ -100,7 +100,7 @@ pub struct Arc {
     pub to: String,
 }
 
-#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, Deserialize, Debug)]
 pub enum Boundary {
     #[serde(rename = "circle")]
     Circle(Circle),
@@ -110,7 +110,7 @@ pub enum Boundary {
     Line(Vec<String>),
 }
 
-#[derive(Clone, Deserialize, Debug, Eq, PartialEq)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct Volume {
     pub id: Option<String>,
     pub name: Option<String>,
