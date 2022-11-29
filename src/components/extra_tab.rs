@@ -9,8 +9,8 @@ pub struct Props {
     pub on_clear: Callback<ExtraCategory>,
 }
 
-#[function_component]
-pub fn ExtraTab(props: &Props) -> Html {
+#[function_component(ExtraTab)]
+pub fn extra_tab(props: &Props) -> Html {
     let active_panel = use_state(|| 0);
 
     let onclick = {

@@ -3,8 +3,8 @@ use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
 use wasm_bindgen::JsCast;
 use yew::{
-    function_component, html, use_effect_with_deps, use_reducer, use_state, Callback, Html,
-    Renderer,
+    function_component, html, use_effect_with_deps, use_reducer, use_state,
+    Callback,
 };
 
 use components::{AirspaceTab, ExtraPanel, ExtraTab, NotamTab, OptionsTab, Tabs};
@@ -207,5 +207,5 @@ fn app() -> Html {
 
 fn main() {
     //wasm_logger::init(wasm_logger::Config::default());
-    Renderer::<App>::new().render();
+    yew::start_app::<App>();
 }
