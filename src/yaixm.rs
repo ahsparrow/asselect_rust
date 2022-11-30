@@ -139,7 +139,7 @@ pub struct Feature {
     pub geometry: Vec<Volume>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Clone, Deserialize, Debug)]
 pub struct Replace {
     pub id: String,
     pub geometry: Vec<Volume>,
@@ -148,7 +148,7 @@ pub struct Replace {
 #[derive(Deserialize, Debug)]
 pub struct LoaArea {
     pub name: String,
-    pub add: Option<Vec<Feature>>,
+    pub add: Vec<Feature>,
     pub replace: Option<Vec<Replace>>,
 }
 

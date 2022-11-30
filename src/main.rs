@@ -1,3 +1,5 @@
+#![allow(clippy::let_unit_value)]
+
 use gloo_file::{Blob, ObjectUrl};
 use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
@@ -206,6 +208,6 @@ fn app() -> Html {
 }
 
 fn main() {
-    //wasm_logger::init(wasm_logger::Config::default());
+    wasm_logger::init(wasm_logger::Config::default());
     yew::start_app::<App>();
 }

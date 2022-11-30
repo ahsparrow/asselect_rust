@@ -1,6 +1,6 @@
 use crate::state::{AirType, Format, Settings};
 use crate::yaixm::{
-    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, LocalType, Rule, Service, Volume, Yaixm,
+    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, Loa, LocalType, Rule, Service, Volume, Yaixm,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -424,9 +424,76 @@ fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
     }
 }
 
+// Search for volume id and return indices of feature/volume
+fn find_volume(airspace: &Vec<Feature>, volume_id: &str) -> Option<(usize, usize)> {
+    for (f, feature) in airspace.iter().enumerate() {
+        for (v, volume) in feature.geometry.iter().enumerate() {
+            if volume.id.as_deref() == Some(volume_id) {
+                return Some((f, v));
+            }
+        }
+    }
+    None
+}
+
+fn merge_loa(airspace: &mut Vec<Feature>, loas: &Vec<&Loa>) {
+    // Add new features
+    for loa in loas {
+        for area in &loa.areas {
+            for feature in &area.add {
+                let mut feature = feature.clone();
+                let mut rules = feature.rules.unwrap_or(HashSet::new());
+
+                // Add LOA rule
+                rules.replace(Rule::Loa);
+                feature.rules = Some(rules);
+
+                airspace.push(feature);
+            }
+        }
+    }
+
+    // Replace volumes
+    for loa in loas {
+        for area in &loa.areas {
+            if let Some(replacements) = &area.replace {
+                for replace in replacements {
+                    // Find replacement volume
+                    if let Some((f, v)) = find_volume(airspace, &replace.id) {
+                        let r = (*replace).clone();
+
+                        // Update seqno from existing volume and add to feature
+                        if let Some(seqno) = airspace[f].geometry[v].seqno {
+                            for mut vol in r.geometry {
+                                vol.seqno = Some(seqno);
+                                airspace[f].geometry.push(vol);
+                            }
+                        }
+
+                        // Delete the exiting volume
+                        airspace[f].geometry.remove(v);
+
+                        // Remove feature if no remaining geometry
+                        if airspace[f].geometry.is_empty() {
+                            airspace.remove(f);
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
     let mut output = String::new();
     let mut airspace = yaixm.airspace.clone();
+
+    let loas = yaixm
+        .loa
+        .iter()
+        .filter(|&x| (x.default == Some(true)) | settings.loa.contains(&x.name))
+        .collect::<Vec<&Loa>>();
+    merge_loa(&mut airspace, &loas);
 
     merge_services(&mut airspace, &yaixm.service);
 
