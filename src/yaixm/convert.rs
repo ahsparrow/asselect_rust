@@ -1,6 +1,7 @@
 use crate::state::{AirType, Format, Settings};
 use crate::yaixm::{
-    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, Loa, LocalType, Rule, Service, Volume, Yaixm,
+    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, Loa, LocalType, Rule, Service, Volume,
+    Yaixm,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -497,6 +498,16 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
         .filter(|&x| (x.default == Some(true)) | settings.loa.contains(&x.name))
         .collect::<Vec<&Loa>>();
     merge_loa(&mut airspace, &loas);
+
+    // Append RA(T)s
+    airspace.append(
+        &mut yaixm
+            .rat
+            .iter()
+            .filter(|rat| settings.rat.contains(&rat.name))
+            .cloned()
+            .collect::<Vec<Feature>>(),
+    );
 
     // Merge radio frequencies
     merge_services(&mut airspace, &yaixm.service);
