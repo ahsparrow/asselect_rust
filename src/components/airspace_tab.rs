@@ -58,7 +58,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="ils" onchange={onchange.clone()}>
-                      <option value="atz" selected={set.ils == None}>{"As ATZ"}</option>
+                      <option value="atz" selected={set.ils.is_none()}>{"As ATZ"}</option>
                       <option value="classf" selected={set.ils == Some(AirType::ClassF)}>{"Class F"}</option>
                       <option value="classg" selected={set.ils == Some(AirType::ClassG)}>{"Class G"}</option>
                     </select>
@@ -76,7 +76,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="unlicensed" onchange={onchange.clone()}>
-                      <option value="exclude" selected={set.unlicensed == None}>{"Exclude"}</option>
+                      <option value="exclude" selected={set.unlicensed.is_none()}>{"Exclude"}</option>
                       <option value="classf" selected={set.unlicensed == Some(AirType::ClassF)}>{"Class F"}</option>
                       <option value="classg" selected={set.unlicensed == Some(AirType::ClassG)}>{"Class G"}</option>
                     </select>
@@ -91,7 +91,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="microlight" onchange={onchange.clone()}>
-                      <option value="exclude" selected={set.microlight == None}>{"Exclude"}</option>
+                      <option value="exclude" selected={set.microlight.is_none()}>{"Exclude"}</option>
                       <option value="classf" selected={set.microlight == Some(AirType::ClassF)}>{"Class F"}</option>
                       <option value="classg" selected={set.microlight == Some(AirType::ClassG)}>{"Class G"}</option>
                     </select>
@@ -109,7 +109,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="gliding" onchange={onchange.clone()}>
-                      <option value="exclude" selected={set.gliding == None}>{"Exclude"}</option>
+                      <option value="exclude" selected={set.gliding.is_none()}>{"Exclude"}</option>
                       <option value="gsec" selected={set.gliding == Some(AirType::Gliding)}>{"Gliding Sector"}</option>
                       <option value="classf" selected={set.gliding == Some(AirType::ClassF)}>{"Class F"}</option>
                       <option value="classg" selected={set.gliding == Some(AirType::ClassG)}>{"Class G"}</option>
@@ -125,7 +125,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="home" onchange={onchange.clone()}>
-                      <option selected={set.home == None}>{"None"}</option>
+                      <option selected={set.home.is_none()}>{"None"}</option>
                       { gliding_sites() }
                     </select>
                   </div>
@@ -142,7 +142,7 @@ pub fn airspace_tab(props: &Props) -> Html {
                 <div class="control">
                   <div class="select is-fullwidth">
                     <select name="hirta_gvs" onchange={onchange.clone()}>
-                      <option value="exclude" selected={set.hirta_gvs == None}>{"Exclude"}</option>
+                      <option value="exclude" selected={set.hirta_gvs.is_none()}>{"Exclude"}</option>
                       <option value="danger" selected={set.hirta_gvs == Some(AirType::Danger)}>{"Danger"}</option>
                       <option value="restricted" selected={set.hirta_gvs == Some(AirType::Restricted)}>{"Restricted"}</option>
                     </select>

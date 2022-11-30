@@ -5,7 +5,7 @@ use crate::yaixm::{
 use std::collections::{HashMap, HashSet};
 
 impl IcaoClass {
-    fn to_str(&self) -> &'static str {
+    fn as_str(&self) -> &'static str {
         match self {
             IcaoClass::A => "A",
             IcaoClass::B => "B",
@@ -19,7 +19,7 @@ impl IcaoClass {
 }
 
 impl LocalType {
-    fn to_str(&self) -> &'static str {
+    fn as_str(&self) -> &'static str {
         match self {
             LocalType::Dz => "DZ",
             LocalType::Glider => "GLIDER",
@@ -38,7 +38,7 @@ impl LocalType {
 }
 
 impl Rule {
-    fn to_str(&self) -> &'static str {
+    fn as_str(&self) -> &'static str {
         match self {
             Rule::Intense => "INTENSE",
             Rule::Loa => "LOA",
@@ -54,7 +54,7 @@ impl Rule {
 }
 
 impl AirType {
-    fn to_str(&self) -> &'static str {
+    fn as_str(&self) -> &'static str {
         match self {
             AirType::ClassA => "A",
             AirType::ClassB => "B",
@@ -131,21 +131,21 @@ fn format_distance(distance: &str) -> String {
 fn airfilter(feature: &Feature, vol: &Volume, settings: &Settings) -> bool {
     let exclude = match feature.local_type {
         // No-ATZ
-        Some(LocalType::NoAtz) => settings.airspace.unlicensed == None,
+        Some(LocalType::NoAtz) => settings.airspace.unlicensed.is_none(),
         // Microlight
-        Some(LocalType::Ul) => settings.airspace.microlight == None,
+        Some(LocalType::Ul) => settings.airspace.microlight.is_none(),
         // Wave Box
         Some(LocalType::Glider) if feature.icao_type == IcaoType::DOther => {
             !settings.wave.contains(&feature.name)
         }
         // Gliding Site
         Some(LocalType::Glider) => {
-            settings.airspace.gliding == None
+            settings.airspace.gliding.is_none()
                 || settings.airspace.home.as_ref() == Some(&feature.name)
         }
         // HIRTA/GVS/Laser
         Some(LocalType::Hirta) | Some(LocalType::Gvs) | Some(LocalType::Laser) => {
-            settings.airspace.hirta_gvs == None
+            settings.airspace.hirta_gvs.is_none()
         }
         _ => false,
     };
@@ -178,7 +178,7 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
         | Some(LocalType::Laser) = feature.local_type
         {
             name.push(' ');
-            name += feature.local_type.unwrap().to_str();
+            name += feature.local_type.unwrap().as_str();
         } else if feature.icao_type == IcaoType::Atz {
             name += " ATZ";
         } else if rules.contains(&Rule::Raz) {
@@ -204,7 +204,7 @@ fn do_name(feature: &Feature, vol: &Volume, n: usize, settings: &Settings) -> St
         let mut qualifiers = rules
             .into_iter()
             .filter(|&x| *x == Rule::Si || *x == Rule::Notam)
-            .map(|x| x.to_str().to_string())
+            .map(|x| x.as_str().to_string())
             .collect::<Vec<String>>();
 
         if !qualifiers.is_empty() {
@@ -243,7 +243,7 @@ fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
         "G"
     } else {
         match feature.icao_type {
-            IcaoType::Atz => settings.airspace.atz.to_str(),
+            IcaoType::Atz => settings.airspace.atz.as_str(),
             IcaoType::D => {
                 if comp && rules.contains(&Rule::Si) {
                     // Danger area with SI
@@ -267,7 +267,7 @@ fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
                                 .airspace
                                 .hirta_gvs
                                 .unwrap_or(AirType::Other)
-                                .to_str()
+                                .as_str()
                         }
                         Some(LocalType::Glider) => "W",
                         _ => "Q",
@@ -279,27 +279,27 @@ fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
                     if rules.contains(&Rule::Loa) {
                         "W"
                     } else {
-                        settings.airspace.gliding.unwrap_or(AirType::Other).to_str()
+                        settings.airspace.gliding.unwrap_or(AirType::Other).as_str()
                     }
                 }
                 Some(LocalType::Ils) => settings
                     .airspace
                     .ils
                     .unwrap_or(settings.airspace.atz)
-                    .to_str(),
+                    .as_str(),
                 Some(LocalType::Matz) => "MATZ",
                 Some(LocalType::NoAtz) => settings
                     .airspace
                     .unlicensed
                     .unwrap_or(AirType::Other)
-                    .to_str(),
+                    .as_str(),
                 Some(LocalType::Rat) => "P",
                 Some(LocalType::Tmz) => "TMZ",
                 Some(LocalType::Ul) => settings
                     .airspace
                     .microlight
                     .unwrap_or(AirType::Other)
-                    .to_str(),
+                    .as_str(),
                 Some(LocalType::Rmz) => "RMZ",
                 _ => "OTHER",
             },
@@ -315,7 +315,7 @@ fn do_type(feature: &Feature, volume: &Volume, settings: &Settings) -> String {
                         .icao_class
                         .or(feature.icao_class)
                         .unwrap_or(IcaoClass::G)
-                        .to_str()
+                        .as_str()
                 }
             }
         }
@@ -425,7 +425,7 @@ fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
 }
 
 // Search for volume id and return indices of feature/volume
-fn find_volume(airspace: &Vec<Feature>, volume_id: &str) -> Option<(usize, usize)> {
+fn find_volume(airspace: &[Feature], volume_id: &str) -> Option<(usize, usize)> {
     for (f, feature) in airspace.iter().enumerate() {
         for (v, volume) in feature.geometry.iter().enumerate() {
             if volume.id.as_deref() == Some(volume_id) {
@@ -442,7 +442,7 @@ fn merge_loa(airspace: &mut Vec<Feature>, loas: &Vec<&Loa>) {
         for area in &loa.areas {
             for feature in &area.add {
                 let mut feature = feature.clone();
-                let mut rules = feature.rules.unwrap_or(HashSet::new());
+                let mut rules = feature.rules.unwrap_or_default();
 
                 // Add LOA rule
                 rules.replace(Rule::Loa);
