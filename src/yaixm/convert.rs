@@ -395,6 +395,7 @@ fn do_boundary(boundary: &[Boundary]) -> String {
     out
 }
 
+// Merge radio frequency data
 fn merge_services(airspace: &mut Vec<Feature>, services: &Vec<Service>) {
     // Create frequency map
     let mut frequencies = HashMap::new();
@@ -436,6 +437,7 @@ fn find_volume(airspace: &[Feature], volume_id: &str) -> Option<(usize, usize)> 
     None
 }
 
+// Merge LOAs into main airspace data
 fn merge_loa(airspace: &mut Vec<Feature>, loas: &Vec<&Loa>) {
     // Add new features
     for loa in loas {
@@ -484,10 +486,11 @@ fn merge_loa(airspace: &mut Vec<Feature>, loas: &Vec<&Loa>) {
     }
 }
 
+// Generate OpenAir data
 pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
-    let mut output = String::new();
     let mut airspace = yaixm.airspace.clone();
 
+    // Merge LOAs
     let loas = yaixm
         .loa
         .iter()
@@ -495,8 +498,11 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
         .collect::<Vec<&Loa>>();
     merge_loa(&mut airspace, &loas);
 
+    // Merge radio frequencies
     merge_services(&mut airspace, &yaixm.service);
 
+    // Build OpenAir data
+    let mut output = String::new();
     for feature in airspace {
         for (n, volume) in feature.geometry.iter().enumerate() {
             if airfilter(&feature, volume, settings) {
