@@ -1,9 +1,9 @@
-use chrono::Utc;
 use crate::state::{AirType, Format, Settings};
 use crate::yaixm::{
-    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, Loa, LocalType,
-    Obstacle, Rule, Service, Volume, Yaixm,
+    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, Loa, LocalType, Obstacle, Rule, Service,
+    Volume, Yaixm,
 };
+use chrono::Utc;
 use std::collections::{HashMap, HashSet};
 
 impl IcaoClass {
@@ -497,27 +497,21 @@ fn add_obstacles(airspace: &mut Vec<Feature>, obstacles: &Vec<Obstacle>) {
             id: None,
             local_type: None,
             rules: None,
-            geometry: vec![
-                Volume {
-                    upper: obstacle.elevation.clone(),
-                    lower: "SFC".to_string(),
-                    boundary: vec![
-                        Boundary::Circle(
-                            Circle {
-                                centre: obstacle.position.clone(),
-                                radius: "0.5 nm".to_string(),
-                            }
-                        ),
-                    ],
-                    icao_class: None,
-                    frequency: None,
-                    id: None,
-                    name: None,
-                    rules: None,
-                    seqno: None,
-                    subseq: None,
-                }
-            ]
+            geometry: vec![Volume {
+                upper: obstacle.elevation.clone(),
+                lower: "SFC".to_string(),
+                boundary: vec![Boundary::Circle(Circle {
+                    centre: obstacle.position.clone(),
+                    radius: "0.5 nm".to_string(),
+                })],
+                icao_class: None,
+                frequency: None,
+                id: None,
+                name: None,
+                rules: None,
+                seqno: None,
+                subseq: None,
+            }],
         };
         airspace.push(feature);
     }
@@ -556,7 +550,8 @@ fn header(note: &str, airac: &str, commit: &str, settings: &Settings) -> String 
             }
         })
         .collect::<Vec<String>>()
-        .join("\n") + "\n"
+        .join("\n")
+        + "\n"
 }
 
 // Generate OpenAir data

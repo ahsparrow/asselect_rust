@@ -4,10 +4,7 @@ use gloo_file::{Blob, ObjectUrl};
 use gloo_storage::{LocalStorage, Storage};
 use gloo_utils::document;
 use wasm_bindgen::JsCast;
-use yew::{
-    function_component, html, use_effect_with_deps, use_reducer, use_state,
-    Callback,
-};
+use yew::{function_component, html, use_effect_with_deps, use_reducer, use_state, Callback};
 
 use components::{AirspaceTab, ExtraPanel, ExtraTab, NotamTab, OptionsTab, Tabs};
 use state::{Action, State};
@@ -39,7 +36,9 @@ pub struct ExtraSetting {
 
 #[function_component(App)]
 fn app() -> Html {
-    let state = use_reducer(|| State{ settings: LocalStorage::get("settings").unwrap_or_default()});
+    let state = use_reducer(|| State {
+        settings: LocalStorage::get("settings").unwrap_or_default(),
+    });
     let yaixm = use_state(|| None);
 
     // Fetch YAIXM data
