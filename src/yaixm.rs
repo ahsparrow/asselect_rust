@@ -162,7 +162,7 @@ pub struct Loa {
 #[derive(Deserialize, Debug)]
 pub struct Obstacle {
     pub elevation: String,
-    pub id: String,
+    pub name: String,
     pub position: String,
 }
 

@@ -1,7 +1,8 @@
+use chrono::Utc;
 use crate::state::{AirType, Format, Settings};
 use crate::yaixm::{
-    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, Loa, LocalType, Rule, Service, Volume,
-    Yaixm,
+    Arc, Boundary, Circle, Feature, IcaoClass, IcaoType, Loa, LocalType,
+    Obstacle, Rule, Service, Volume, Yaixm,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -487,6 +488,77 @@ fn merge_loa(airspace: &mut Vec<Feature>, loas: &Vec<&Loa>) {
     }
 }
 
+fn add_obstacles(airspace: &mut Vec<Feature>, obstacles: &Vec<Obstacle>) {
+    for obstacle in obstacles {
+        let feature = Feature {
+            name: obstacle.name.clone(),
+            icao_type: IcaoType::Other,
+            icao_class: None,
+            id: None,
+            local_type: None,
+            rules: None,
+            geometry: vec![
+                Volume {
+                    upper: obstacle.elevation.clone(),
+                    lower: "SFC".to_string(),
+                    boundary: vec![
+                        Boundary::Circle(
+                            Circle {
+                                centre: obstacle.position.clone(),
+                                radius: "0.5 nm".to_string(),
+                            }
+                        ),
+                    ],
+                    icao_class: None,
+                    frequency: None,
+                    id: None,
+                    name: None,
+                    rules: None,
+                    seqno: None,
+                    subseq: None,
+                }
+            ]
+        };
+        airspace.push(feature);
+    }
+}
+
+// File header
+fn header(note: &str, airac: &str, commit: &str, settings: &Settings) -> String {
+    let mut hdr = "UK Airspace\n\
+        Alan Sparrow (airspace@asselect.uk)\n\
+        \n\
+        I have tried to make this data as accurate as possible but\n\
+        there will still be errors. Don't blame me if you go somewhere you\n\
+        should not have gone while using this data.\n\
+        \n\
+        To the extent possible under law, Alan Sparrow has waived all\n\
+        copyright and related or neighbouring rights to this file. The data\n\
+        in this file is based on the work of others including: George Knight,\n\
+        Geoff Brown, Peter Desmond and Rory O'Connor.  The data is originally\n\
+        sourced from the UK Aeronautical Information Package (AIP).\n\
+        \n"
+    .to_string();
+
+    hdr.push_str(note);
+    hdr.push_str(&format!("\nAIRAC: {}\n", &airac[..10]));
+    hdr.push_str(&format!("Commit: {}\n", commit));
+    hdr.push_str(&format!("Produced: {}\n", Utc::now().to_rfc3339()));
+    hdr.push_str(&format!("{:?}", settings));
+
+    // Prepend "*" to lines
+    hdr.split("\n")
+        .map(|x| {
+            if x == "" {
+                "*".to_string()
+            } else {
+                "* ".to_owned() + x
+            }
+        })
+        .collect::<Vec<String>>()
+        .join("\n") + "\n"
+}
+
 // Generate OpenAir data
 pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
     let mut airspace = yaixm.airspace.clone();
@@ -498,6 +570,11 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
         .filter(|&x| (x.default == Some(true)) | settings.loa.contains(&x.name))
         .collect::<Vec<&Loa>>();
     merge_loa(&mut airspace, &loas);
+
+    // Add obstacles
+    if settings.airspace.obstacle {
+        add_obstacles(&mut airspace, &yaixm.obstacle);
+    }
 
     // Append RA(T)s
     airspace.append(
@@ -513,7 +590,8 @@ pub fn openair(yaixm: &Yaixm, settings: &Settings) -> String {
     merge_services(&mut airspace, &yaixm.service);
 
     // Build OpenAir data
-    let mut output = String::new();
+    let rel = &yaixm.release;
+    let mut output = header(&rel.note, &rel.airac_date, &rel.commit, settings);
     for feature in airspace {
         for (n, volume) in feature.geometry.iter().enumerate() {
             if airfilter(&feature, volume, settings) {
