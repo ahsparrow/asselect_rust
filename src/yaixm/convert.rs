@@ -541,9 +541,9 @@ fn header(note: &str, airac: &str, commit: &str, settings: &Settings) -> String 
     hdr.push_str(&format!("{:?}", settings));
 
     // Prepend "*" to lines
-    hdr.split("\n")
+    hdr.split('\n')
         .map(|x| {
-            if x == "" {
+            if x.is_empty() {
                 "*".to_string()
             } else {
                 "* ".to_owned() + x
