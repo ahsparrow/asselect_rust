@@ -29,7 +29,7 @@ pub fn extra_tab(props: &Props) -> Html {
         .map(|(n, (name, child))| {
             let onclick = onclick.clone();
             html! {
-                <div class="card mb-4">
+                <div class="card block">
                   <header class="card-header is-clickable" onclick={move |_| onclick(n)}>
                     <level class="card-header-title">
                       <p>{ name }</p>

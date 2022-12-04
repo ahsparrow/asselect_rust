@@ -164,7 +164,7 @@ fn app() -> Html {
                     </p>
                   </div>
                 </div>
-                <div class="container">
+                <div class="container block">
                   <Tabs {tab_names}>
                     <AirspaceTab settings={airspace_settings} {gliding_sites} callback={onairspace_set.clone()} />
                     <OptionsTab options={airspace_options} callback={onairspace_set.clone()} />
@@ -176,8 +176,8 @@ fn app() -> Html {
                     <NotamTab />
                   </Tabs>
                 </div>
-                <div class="container">
-                  <div class="ml-4 mt-4">
+                <div class="container block">
+                  <div class="mx-4">
                     <button class="button is-primary" onclick={onsave}>
                       {"Save"}
                     </button>
