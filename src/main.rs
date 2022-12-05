@@ -157,46 +157,48 @@ fn app() -> Html {
 
             html! {
                 <>
-                <div class="hero is-small is-primary">
+                <header class="hero is-small is-primary">
                   <div class="hero-body py-2">
-                    <p class="subtitle is-4">
+                    <div class="subtitle is-4">
                       {"ASSelect - UK Airspace"}
-                    </p>
+                    </div>
                   </div>
-                </div>
-                <div class="container block">
-                  <Tabs {tab_names}>
-                    <AirspaceTab settings={airspace_settings} {gliding_sites} callback={onairspace_set.clone()} />
-                    <OptionsTab options={airspace_options} callback={onairspace_set.clone()} />
-                    <ExtraTab names={extra_names} categories={vec![ExtraCategory::Rat, ExtraCategory::Loa, ExtraCategory::Wave]} on_clear={onextra_clear.clone()}>
-                      <ExtraPanel category={ExtraCategory::Rat} names={rat_names} selected={rat_selected} callback={onextra_set.clone()}/>
-                      <ExtraPanel category={ExtraCategory::Loa} names={loa_names} selected={loa_selected} callback={onextra_set.clone()}/>
-                      <ExtraPanel category={ExtraCategory::Wave} names={wav_names} selected={wav_selected} callback={onextra_set.clone()}/>
-                    </ExtraTab>
-                    <NotamTab />
-                  </Tabs>
-                </div>
-                <div class="container block">
-                  <div class="mx-4">
-                    <button class="button is-primary" onclick={onsave}>
-                      {"Save"}
-                    </button>
-                    <a id="download" hidden=true download="openair.txt">{"Download"}</a>
+                </header>
+                <main>
+                  <div class="container block">
+                    <Tabs {tab_names}>
+                      <AirspaceTab settings={airspace_settings} {gliding_sites} callback={onairspace_set.clone()} />
+                      <OptionsTab options={airspace_options} callback={onairspace_set.clone()} />
+                      <ExtraTab names={extra_names} categories={vec![ExtraCategory::Rat, ExtraCategory::Loa, ExtraCategory::Wave]} on_clear={onextra_clear.clone()}>
+                        <ExtraPanel category={ExtraCategory::Rat} names={rat_names} selected={rat_selected} callback={onextra_set.clone()}/>
+                        <ExtraPanel category={ExtraCategory::Loa} names={loa_names} selected={loa_selected} callback={onextra_set.clone()}/>
+                        <ExtraPanel category={ExtraCategory::Wave} names={wav_names} selected={wav_selected} callback={onextra_set.clone()}/>
+                      </ExtraTab>
+                      <NotamTab />
+                    </Tabs>
                   </div>
-                </div>
+                  <div class="container block">
+                    <div class="mx-4">
+                      <button class="button is-primary" onclick={onsave}>
+                        {"Save"}
+                      </button>
+                      <a id="download" hidden=true download="openair.txt">{"Download"}</a>
+                    </div>
+                  </div>
+                </main>
                 </>
             }
         }
         // Waiting for YAIXM data
         None => {
             html! {
-              <div class="section">
+              <main class="section">
                 <div class="container">
                   <div class="notification is-info">
                     <h2 class="title is-4">{"Waiting for airspace data..."}</h2>
                   </div>
                 </div>
-              </div>
+              </main>
             }
         }
     };

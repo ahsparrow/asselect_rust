@@ -62,11 +62,11 @@ pub fn tabs(props: &Props) -> Html {
 
     html! {
         <>
-        <div class="tabs">
+        <nav class="tabs">
           <ul {onclick}>
             { tabs() }
           </ul>
-        </div>
+        </nav>
         <div class="mx-4">
           { panel() }
         </div>
