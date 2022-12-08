@@ -195,8 +195,8 @@ fn app() -> Html {
         // Waiting for YAIXM data
         None => {
             html! {
-              <header class="hero is-small is-info">
-                <div class="hero-body py-2">
+              <header class="hero is-small is-primary">
+                <div class="hero-body">
                   <div class="container">
                     <div class="title is-4">
                       {"ASSelect - Getting airspace data..."}
