@@ -37,7 +37,7 @@ pub fn airspace_tab(props: &Props) -> Html {
     };
 
     html! {
-        <div>
+        <div class="box">
           <div class="columns">
             <div class="column is-one-third">
               <div class="field">

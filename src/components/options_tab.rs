@@ -23,7 +23,7 @@ pub fn options_tab(props: &Props) -> Html {
     let opts = &props.options;
 
     html! {
-        <div>
+        <div class="box">
           <div class="columns">
             <div class="column is-one-third">
               <div class="field">
