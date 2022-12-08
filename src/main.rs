@@ -126,9 +126,6 @@ fn app() -> Html {
     let html_logic = match yaixm.as_ref() {
         // Render full interface if YAIXM data is available
         Some(yaixm) => {
-            let airspace_settings = state.settings.airspace.clone();
-            let airspace_options = state.settings.options.clone();
-
             let mut gliding_sites = gliding_sites(yaixm);
             gliding_sites.sort();
 
@@ -169,8 +166,8 @@ fn app() -> Html {
 
                 <div class="container block">
                   <Tabs {tab_names}>
-                    <AirspaceTab settings={airspace_settings} {gliding_sites} callback={onairspace_set.clone()} />
-                    <OptionsTab options={airspace_options} callback={onairspace_set.clone()} />
+                    <AirspaceTab settings={state.settings.airspace.clone()} options={state.settings.options.clone()} {gliding_sites} callback={onairspace_set.clone()} />
+                    <OptionsTab settings={state.settings.airspace.clone()} options={state.settings.options.clone()} callback={onairspace_set.clone()} />
                     <ExtraTab names={extra_names} categories={vec![ExtraCategory::Rat, ExtraCategory::Loa, ExtraCategory::Wave]} on_clear={onextra_clear.clone()}>
                       <ExtraPanel category={ExtraCategory::Rat} names={rat_names} selected={rat_selected} callback={onextra_set.clone()}/>
                       <ExtraPanel category={ExtraCategory::Loa} names={loa_names} selected={loa_selected} callback={onextra_set.clone()}/>

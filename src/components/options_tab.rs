@@ -1,10 +1,11 @@
-use crate::state::{Format, Options};
+use crate::state::{Airspace, AirType, Format, Options};
 use crate::AirspaceSetting;
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, Callback, Event, Properties, TargetCast};
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
+    pub settings: Airspace,
     pub options: Options,
     pub callback: Callback<AirspaceSetting>,
 }
@@ -18,11 +19,27 @@ pub fn options_tab(props: &Props) -> Html {
         AirspaceSetting { name, value }
     });
 
+    let set = &props.settings;
     let opts = &props.options;
 
     html! {
         <div>
           <div class="columns">
+            <div class="column is-one-third">
+              <div class="field">
+                <label class="label is-small">{"Format:"}</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select name="format" onchange={onchange.clone()}>
+                      <option value="openair" selected={opts.format == Format::OpenAir}>{"OpenAir"}</option>
+                      <option value="ratonly" selected={opts.format == Format::RatOnly}>{"RA(T) only"}</option>
+                      <option value="competition" selected={opts.format == Format::Competition}>{"Competition"}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="column is-one-third">
               <div class="field">
                 <label class="label is-small">{"Maximum Level:"}</label>
@@ -40,19 +57,6 @@ pub fn options_tab(props: &Props) -> Html {
               </div>
             </div>
 
-            <div class="column is-one-third">
-              <div class="field">
-                <label class="label is-small">{"Append Radio Frequencies:"}</label>
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <select name="radio" onchange={onchange.clone()}>
-                      <option value="no" selected={!opts.radio}>{"No"}</option>
-                      <option value="yes" selected={opts.radio}>{"Yes"}</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           <div class="columns">
@@ -93,13 +97,27 @@ pub fn options_tab(props: &Props) -> Html {
           <div class="columns">
             <div class="column is-one-third">
               <div class="field">
-                <label class="label is-small">{"Format:"}</label>
+                <label class="label is-small">{"HIRTA/GVS:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select name="format" onchange={onchange.clone()}>
-                      <option value="openair" selected={opts.format == Format::OpenAir}>{"OpenAir"}</option>
-                      <option value="ratonly" selected={opts.format == Format::RatOnly}>{"RA(T) only"}</option>
-                      <option value="competition" selected={opts.format == Format::Competition}>{"Competition"}</option>
+                    <select name="hirta_gvs" onchange={onchange.clone()}>
+                      <option value="exclude" selected={set.hirta_gvs.is_none()}>{"Exclude"}</option>
+                      <option value="danger" selected={set.hirta_gvs == Some(AirType::Danger)}>{"Danger"}</option>
+                      <option value="restricted" selected={set.hirta_gvs == Some(AirType::Restricted)}>{"Restricted"}</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="column is-one-third">
+              <div class="field">
+                <label class="label is-small">{"Obstacle:"}</label>
+                <div class="control">
+                  <div class="select is-fullwidth">
+                    <select name="obstacle" onchange={onchange.clone()}>
+                      <option value="exclude" selected={!set.obstacle}>{"Exclude"}</option>
+                      <option value="include" selected={set.obstacle}>{"Include"}</option>
                     </select>
                   </div>
                 </div>

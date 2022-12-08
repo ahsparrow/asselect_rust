@@ -1,4 +1,4 @@
-use crate::state::{AirType, Airspace};
+use crate::state::{AirType, Airspace, Options};
 use crate::AirspaceSetting;
 use web_sys::HtmlInputElement;
 use yew::{function_component, html, Callback, Event, Html, Properties, TargetCast};
@@ -6,6 +6,7 @@ use yew::{function_component, html, Callback, Event, Html, Properties, TargetCas
 #[derive(Properties, PartialEq)]
 pub struct Props {
     pub settings: Airspace,
+    pub options: Options,
     pub gliding_sites: Vec<String>,
     pub callback: Callback<AirspaceSetting>,
 }
@@ -21,6 +22,7 @@ pub fn airspace_tab(props: &Props) -> Html {
     });
 
     let set = &props.settings;
+    let opts = &props.options;
 
     let gliding_sites = || {
         props
@@ -37,7 +39,6 @@ pub fn airspace_tab(props: &Props) -> Html {
     html! {
         <div>
           <div class="columns">
-
             <div class="column is-one-third">
               <div class="field">
                 <label class="label is-small">{"ATZ:"}</label>
@@ -69,7 +70,6 @@ pub fn airspace_tab(props: &Props) -> Html {
           </div>
 
           <div class="columns">
-
             <div class="column is-one-third">
               <div class="field">
                 <label class="label is-small">{"Unlicensed Airfield:"}</label>
@@ -102,7 +102,6 @@ pub fn airspace_tab(props: &Props) -> Html {
           </div>
 
           <div class="columns">
-
             <div class="column is-one-third">
               <div class="field">
                 <label class="label is-small">{"Gliding Airfield:"}</label>
@@ -135,37 +134,20 @@ pub fn airspace_tab(props: &Props) -> Html {
           </div>
 
           <div class="columns">
-
             <div class="column is-one-third">
               <div class="field">
-                <label class="label is-small">{"HIRTA/GVS:"}</label>
+                <label class="label is-small">{"Append Frequency to Name:"}</label>
                 <div class="control">
                   <div class="select is-fullwidth">
-                    <select name="hirta_gvs" onchange={onchange.clone()}>
-                      <option value="exclude" selected={set.hirta_gvs.is_none()}>{"Exclude"}</option>
-                      <option value="danger" selected={set.hirta_gvs == Some(AirType::Danger)}>{"Danger"}</option>
-                      <option value="restricted" selected={set.hirta_gvs == Some(AirType::Restricted)}>{"Restricted"}</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="column is-one-third">
-              <div class="field">
-                <label class="label is-small">{"Obstacle:"}</label>
-                <div class="control">
-                  <div class="select is-fullwidth">
-                    <select name="obstacle" onchange={onchange.clone()}>
-                      <option value="exclude" selected={!set.obstacle}>{"Exclude"}</option>
-                      <option value="include" selected={set.obstacle}>{"Include"}</option>
+                    <select name="radio" onchange={onchange.clone()}>
+                      <option value="no" selected={!opts.radio}>{"No"}</option>
+                      <option value="yes" selected={opts.radio}>{"Yes"}</option>
                     </select>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-
         </div>
     }
 }
